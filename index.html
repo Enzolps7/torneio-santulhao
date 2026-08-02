@@ -1687,12 +1687,25 @@
     async function generateFinal() {
       const semi1 = state.matches.find(m => m.stage === 'semi' && m.semi_slot === 'semi1');
       const semi2 = state.matches.find(m => m.stage === 'semi' && m.semi_slot === 'semi2');
-      if (!semi1?.played || !semi2?.played) return alert('As duas meias-finais têm de estar concluídas');
-      if (semi1.score1 === semi1.score2 || semi2.score1 === semi2.score2) return alert('As meias-finais não podem terminar empatadas');
-      const winner1 = semi1.score1 > semi1.score2 ? semi1.team1_id : semi1.team2_id;
-      const loser1 = semi1.score1 > semi1.score2 ? semi1.team2_id : semi1.team1_id;
-      const winner2 = semi2.score1 > semi2.score2 ? semi2.team1_id : semi2.team2_id;
-      const loser2 = semi2.score1 > semi2.score2 ? semi2.team2_id : semi2.team1_id;
+
+      // Calculate scores from goals
+      const semi1Score1 = (semi1?.goals || []).filter(g => g.team_id === semi1?.team1_id).length || 0;
+      const semi1Score2 = (semi1?.goals || []).filter(g => g.team_id === semi1?.team2_id).length || 0;
+      const semi2Score1 = (semi2?.goals || []).filter(g => g.team_id === semi2?.team1_id).length || 0;
+      const semi2Score2 = (semi2?.goals || []).filter(g => g.team_id === semi2?.team2_id).length || 0;
+
+      if (!semi1 || !semi2 || (semi1Score1 === 0 && semi1Score2 === 0) || (semi2Score1 === 0 && semi2Score2 === 0)) {
+        return alert('As duas meias-finais têm de estar concluídas com resultados');
+      }
+      if (semi1Score1 === semi1Score2 || semi2Score1 === semi2Score2) {
+        return alert('As meias-finais não podem terminar empatadas');
+      }
+
+      const winner1 = semi1Score1 > semi1Score2 ? semi1.team1_id : semi1.team2_id;
+      const loser1 = semi1Score1 > semi1Score2 ? semi1.team2_id : semi1.team1_id;
+      const winner2 = semi2Score1 > semi2Score2 ? semi2.team1_id : semi2.team2_id;
+      const loser2 = semi2Score1 > semi2Score2 ? semi2.team2_id : semi2.team1_id;
+
       await db.from('matches').insert([
         { stage: 'final', team1_id: winner1, team2_id: winner2 },
         { stage: 'third_place', team1_id: loser1, team2_id: loser2 }
