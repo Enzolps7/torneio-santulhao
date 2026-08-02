@@ -1368,6 +1368,25 @@
       state.teams.forEach(t => html += `<option value="${t.id}">${escape(t.name)}</option>`);
       html += '</select><input type="text" id="player-name" placeholder="Nome do jogador" /><button class="btn-small" onclick="addPlayer()">Adicionar</button></div></div>';
 
+      html += `<div class="admin-section"><h3>⚽ Registar Golos em Tempo Real</h3>
+        <p class="empty-hint" style="margin-bottom: 12px;">Selecione um match e clique nos jogadores para registar os golos. O score é calculado automaticamente.</p>`;
+
+      const upcomingMatches = state.matches
+        .filter(m => m.team1_id && m.team2_id)
+        .sort((a, b) => (a.scheduled_at || '').localeCompare(b.scheduled_at || ''));
+
+      if (upcomingMatches.length) {
+        html += '<div style="margin-bottom: 12px;"><label style="color: var(--gold-light); font-weight: 700;">Selecione um match:</label><div style="margin-top: 8px;">';
+        upcomingMatches.forEach(m => {
+          const date = m.scheduled_at ? new Date(m.scheduled_at).toLocaleString('pt-PT') : 'Data TBD';
+          html += `<button class="btn-small" style="margin-bottom: 6px; width: 100%; text-align: left;" onclick="selectMatchForGoals('${m.id}')">${escape(m.team1?.name || 'TBD')} vs ${escape(m.team2?.name || 'TBD')} (${date})</button>`;
+        });
+        html += '</div></div>';
+      }
+
+      html += `</div>`;
+      html += `<div id="goals-panel" style="display: none;" class="admin-section"><h3>Registar Golos</h3><div id="goals-content"></div></div>`;
+
       html += `<div class="admin-section"><h3>Calendário de Grupos</h3>
         <p class="empty-hint" style="margin-bottom: 12px;">Os jogos da fase de grupos (todos contra todos) e da fase final são criados automaticamente. Defina apenas a hora de cada jogo em baixo.</p>
         <button class="btn-small" onclick="generateGroupFixtures()">Atualizar Jogos de Grupo</button>
@@ -1480,6 +1499,76 @@
       renderAdmin();
     }
 
+    function selectMatchForGoals(matchId) {
+      const match = state.matches.find(m => m.id === matchId);
+      if (!match || !match.team1_id || !match.team2_id) return;
+
+      const team1 = state.teams.find(t => t.id === match.team1_id);
+      const team2 = state.teams.find(t => t.id === match.team2_id);
+      const currentGoals = state.matches.find(m => m.id === matchId)?.goals || [];
+
+      const score1 = currentGoals.filter(g => g.team_id === match.team1_id).length;
+      const score2 = currentGoals.filter(g => g.team_id === match.team2_id).length;
+
+      let html = `<div style="margin-bottom: 16px;">
+        <div style="text-align: center; margin-bottom: 16px; font-size: 1.3em; font-weight: 700;">
+          <span style="color: var(--gold-light);">${escape(team1?.name || 'TBD')}</span>
+          <span style="margin: 0 12px;">vs</span>
+          <span style="color: var(--gold-light);">${escape(team2?.name || 'TBD')}</span>
+        </div>
+        <div style="text-align: center; margin-bottom: 20px;">
+          <div style="font-size: 2.5em; font-weight: 900; color: var(--gold);">${score1} - ${score2}</div>
+        </div>
+      </div>`;
+
+      html += `<div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">`;
+
+      // Team 1 players
+      html += `<div><h4 style="color: var(--gold-light); margin-bottom: 8px;">🟢 ${escape(team1?.name || 'Equipa 1')}</h4>`;
+      if (team1?.players?.length) {
+        team1.players.forEach(p => {
+          const playerGoals = currentGoals.filter(g => g.player_id === p.id).length;
+          html += `<button class="btn-small" style="width: 100%; margin-bottom: 6px; text-align: left; background: rgba(212, 175, 55, 0.2);" onclick="addGoal('${matchId}', '${p.id}', '${match.team1_id}', true)">${escape(p.name)} ${playerGoals > 0 ? `<span style="color: var(--gold);">(${playerGoals})</span>` : ''}</button>`;
+        });
+      } else {
+        html += `<p class="empty-hint">Sem jogadores</p>`;
+      }
+      html += `</div>`;
+
+      // Team 2 players
+      html += `<div><h4 style="color: var(--gold-light); margin-bottom: 8px;">🔵 ${escape(team2?.name || 'Equipa 2')}</h4>`;
+      if (team2?.players?.length) {
+        team2.players.forEach(p => {
+          const playerGoals = currentGoals.filter(g => g.player_id === p.id).length;
+          html += `<button class="btn-small" style="width: 100%; margin-bottom: 6px; text-align: left; background: rgba(212, 175, 55, 0.2);" onclick="addGoal('${matchId}', '${p.id}', '${match.team2_id}', true)">${escape(p.name)} ${playerGoals > 0 ? `<span style="color: var(--gold);">(${playerGoals})</span>` : ''}</button>`;
+        });
+      } else {
+        html += `<p class="empty-hint">Sem jogadores</p>`;
+      }
+      html += `</div>`;
+
+      html += `</div>`;
+      html += `<div style="margin-top: 16px;"><button class="btn-small" style="width: 100%;" onclick="finishMatch('${matchId}', ${score1}, ${score2})">✅ Finalizar Jogo</button></div>`;
+      html += `<div style="margin-top: 8px;"><button class="btn-small" style="width: 100%; background: linear-gradient(135deg, #d4af37, #f5dd8f); color: var(--green-950);" onclick="renderAdmin()">← Voltar</button></div>`;
+
+      document.getElementById('goals-panel').style.display = 'block';
+      document.getElementById('goals-content').innerHTML = html;
+    }
+
+    async function addGoal(matchId, playerId, teamId, refresh = true) {
+      await db.from('goals').insert({ match_id: matchId, player_id: playerId, team_id: teamId });
+      if (refresh) {
+        await loadData();
+        selectMatchForGoals(matchId);
+      }
+    }
+
+    async function finishMatch(matchId, score1, score2) {
+      await db.from('matches').update({ score1, score2, played: true }).eq('id', matchId);
+      await loadData();
+      renderAdmin();
+    }
+
     function toLocalInputValue(dateStr) {
       if (!dateStr) return '';
       const d = new Date(dateStr);
@@ -1565,6 +1654,9 @@
     window.generateSemis = generateSemis;
     window.generateFinal = generateFinal;
     window.toggleTeam = toggleTeam;
+    window.selectMatchForGoals = selectMatchForGoals;
+    window.addGoal = addGoal;
+    window.finishMatch = finishMatch;
 
     init();
   </script>
