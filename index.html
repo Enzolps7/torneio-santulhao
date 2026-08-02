@@ -83,8 +83,8 @@
 
   .crest-wrap {
     position: relative;
-    width: 170px;
-    height: 190px;
+    width: 160px;
+    height: 200px;
     filter: drop-shadow(0 0 25px rgba(212, 175, 55, 0.45));
   }
 
@@ -94,8 +94,8 @@
     stroke: var(--gold);
     stroke-width: 2.5;
     fill: rgba(212, 175, 55, 0.06);
-    stroke-dasharray: 620;
-    stroke-dashoffset: 620;
+    stroke-dasharray: 520;
+    stroke-dashoffset: 520;
     animation: drawShield 1.6s cubic-bezier(.65,0,.35,1) forwards;
   }
 
@@ -190,8 +190,8 @@
   }
 
   .logo-blason {
-    width: 62px;
-    height: 68px;
+    width: 56px;
+    height: 70px;
     flex-shrink: 0;
     filter: drop-shadow(0 3px 10px rgba(212,175,55,0.4));
     animation: floatLogo 5s ease-in-out infinite;
@@ -609,12 +609,62 @@
   <div id="splash">
     <div class="rays"></div>
     <div class="crest-wrap">
-      <svg viewBox="0 0 100 112" fill="none" xmlns="http://www.w3.org/2000/svg">
-        <path class="crest-shield-path" d="M50 4 L92 18 V54 C92 82 74 100 50 108 C26 100 8 82 8 54 V18 Z" />
+      <svg viewBox="0 0 200 250" xmlns="http://www.w3.org/2000/svg">
+        <path class="crest-shield-path" d="M34,60 Q34,44 50,44 L150,44 Q166,44 166,60 L166,150 L100,206 L34,150 Z" />
         <g class="crest-inner">
-          <circle cx="50" cy="46" r="20" fill="none" stroke="#d4af37" stroke-width="2"/>
-          <path d="M50 30 L54 42 H67 L56 50 L60 62 L50 54 L40 62 L44 50 L33 42 H46 Z" fill="#f5dd8f" stroke="#d4af37" stroke-width="1"/>
-          <path d="M28 84 Q50 74 72 84" stroke="#d4af37" stroke-width="2" fill="none" stroke-linecap="round"/>
+          <!-- castle -->
+          <g fill="#15213a" stroke="#0a1220" stroke-width="1.5">
+            <rect x="76" y="10" width="48" height="40"/>
+            <rect x="76" y="2" width="6" height="8"/>
+            <rect x="85" y="2" width="6" height="8"/>
+            <rect x="94" y="2" width="6" height="8"/>
+            <rect x="103" y="2" width="6" height="8"/>
+            <rect x="112" y="2" width="6" height="8"/>
+            <rect x="36" y="24" width="20" height="26"/>
+            <rect x="35" y="14" width="5" height="8"/>
+            <rect x="43" y="14" width="5" height="8"/>
+            <rect x="51" y="14" width="5" height="8"/>
+            <rect x="144" y="24" width="20" height="26"/>
+            <rect x="143" y="14" width="5" height="8"/>
+            <rect x="151" y="14" width="5" height="8"/>
+            <rect x="159" y="14" width="5" height="8"/>
+          </g>
+          <path d="M92,50 L92,34 A8,8 0 0 1 108,34 L108,50 Z" fill="#f4c430" stroke="#0a1220" stroke-width="1.5"/>
+          <!-- shield fill -->
+          <path d="M34,60 Q34,44 50,44 L150,44 Q166,44 166,60 L166,150 L100,206 L34,150 Z" fill="#f4c430" stroke="#0a1220" stroke-width="3"/>
+          <clipPath id="shieldClip">
+            <path d="M34,60 Q34,44 50,44 L150,44 Q166,44 166,60 L166,150 L100,206 L34,150 Z"/>
+          </clipPath>
+          <g clip-path="url(#shieldClip)">
+            <g stroke="#2f6b2f" stroke-width="2.5" fill="none">
+              <path d="M100,78 L70,114"/>
+              <path d="M100,78 L130,114"/>
+            </g>
+            <g fill="#3a7d3a" stroke="#1f4d1f" stroke-width="0.8">
+              <ellipse cx="82" cy="92" rx="7" ry="3.5" transform="rotate(-35 82 92)"/>
+              <ellipse cx="90" cy="100" rx="7" ry="3.5" transform="rotate(-35 90 100)"/>
+              <ellipse cx="118" cy="92" rx="7" ry="3.5" transform="rotate(35 118 92)"/>
+              <ellipse cx="110" cy="100" rx="7" ry="3.5" transform="rotate(35 110 100)"/>
+            </g>
+            <g fill="#1e3d1e" stroke="#0f1f0f" stroke-width="0.8">
+              <circle cx="70" cy="116" r="6"/>
+              <circle cx="130" cy="116" r="6"/>
+            </g>
+            <g fill="#9aa0a6" stroke="#0a1220" stroke-width="1.2">
+              <rect x="55" y="138" width="90" height="8"/>
+              <path d="M60,146 A12,12 0 0 1 84,146 Z" fill="#c7cbd1"/>
+              <path d="M88,146 A12,12 0 0 1 112,146 Z" fill="#c7cbd1"/>
+              <path d="M116,146 A12,12 0 0 1 140,146 Z" fill="#c7cbd1"/>
+            </g>
+            <g fill="none" stroke="#3f7fbf" stroke-width="3" stroke-linecap="round">
+              <path d="M20,160 Q45,152 70,160 T120,160 T170,160 T220,160"/>
+              <path d="M20,172 Q45,164 70,172 T120,172 T170,172 T220,172"/>
+              <path d="M20,184 Q45,176 70,184 T120,184 T170,184 T220,184"/>
+            </g>
+          </g>
+          <!-- ribbon -->
+          <path d="M12,214 L40,208 L160,208 L188,214 L172,224 L188,234 L160,242 L40,242 L12,234 L28,224 Z" fill="#f5f0e1" stroke="#0a1220" stroke-width="2"/>
+          <text x="100" y="230" text-anchor="middle" font-family="Georgia, 'Times New Roman', serif" font-weight="700" font-size="17" fill="#15213a" letter-spacing="1">SANTULHÃO</text>
         </g>
       </svg>
     </div>
@@ -626,11 +676,57 @@
   <header>
     <div class="header-content">
       <div class="logo-blason">
-        <svg viewBox="0 0 100 112" fill="none" xmlns="http://www.w3.org/2000/svg">
-          <path d="M50 4 L92 18 V54 C92 82 74 100 50 108 C26 100 8 82 8 54 V18 Z" fill="rgba(212,175,55,0.08)" stroke="#d4af37" stroke-width="3"/>
-          <circle cx="50" cy="46" r="20" fill="none" stroke="#d4af37" stroke-width="2"/>
-          <path d="M50 30 L54 42 H67 L56 50 L60 62 L50 54 L40 62 L44 50 L33 42 H46 Z" fill="#f5dd8f" stroke="#d4af37" stroke-width="1"/>
-          <path d="M28 84 Q50 74 72 84" stroke="#d4af37" stroke-width="2" fill="none" stroke-linecap="round"/>
+        <svg viewBox="0 0 200 250" xmlns="http://www.w3.org/2000/svg">
+          <g fill="#15213a" stroke="#0a1220" stroke-width="1.5">
+            <rect x="76" y="10" width="48" height="40"/>
+            <rect x="76" y="2" width="6" height="8"/>
+            <rect x="85" y="2" width="6" height="8"/>
+            <rect x="94" y="2" width="6" height="8"/>
+            <rect x="103" y="2" width="6" height="8"/>
+            <rect x="112" y="2" width="6" height="8"/>
+            <rect x="36" y="24" width="20" height="26"/>
+            <rect x="35" y="14" width="5" height="8"/>
+            <rect x="43" y="14" width="5" height="8"/>
+            <rect x="51" y="14" width="5" height="8"/>
+            <rect x="144" y="24" width="20" height="26"/>
+            <rect x="143" y="14" width="5" height="8"/>
+            <rect x="151" y="14" width="5" height="8"/>
+            <rect x="159" y="14" width="5" height="8"/>
+          </g>
+          <path d="M92,50 L92,34 A8,8 0 0 1 108,34 L108,50 Z" fill="#f4c430" stroke="#0a1220" stroke-width="1.5"/>
+          <path d="M34,60 Q34,44 50,44 L150,44 Q166,44 166,60 L166,150 L100,206 L34,150 Z" fill="#f4c430" stroke="#0a1220" stroke-width="3"/>
+          <clipPath id="shieldClipHeader">
+            <path d="M34,60 Q34,44 50,44 L150,44 Q166,44 166,60 L166,150 L100,206 L34,150 Z"/>
+          </clipPath>
+          <g clip-path="url(#shieldClipHeader)">
+            <g stroke="#2f6b2f" stroke-width="2.5" fill="none">
+              <path d="M100,78 L70,114"/>
+              <path d="M100,78 L130,114"/>
+            </g>
+            <g fill="#3a7d3a" stroke="#1f4d1f" stroke-width="0.8">
+              <ellipse cx="82" cy="92" rx="7" ry="3.5" transform="rotate(-35 82 92)"/>
+              <ellipse cx="90" cy="100" rx="7" ry="3.5" transform="rotate(-35 90 100)"/>
+              <ellipse cx="118" cy="92" rx="7" ry="3.5" transform="rotate(35 118 92)"/>
+              <ellipse cx="110" cy="100" rx="7" ry="3.5" transform="rotate(35 110 100)"/>
+            </g>
+            <g fill="#1e3d1e" stroke="#0f1f0f" stroke-width="0.8">
+              <circle cx="70" cy="116" r="6"/>
+              <circle cx="130" cy="116" r="6"/>
+            </g>
+            <g fill="#9aa0a6" stroke="#0a1220" stroke-width="1.2">
+              <rect x="55" y="138" width="90" height="8"/>
+              <path d="M60,146 A12,12 0 0 1 84,146 Z" fill="#c7cbd1"/>
+              <path d="M88,146 A12,12 0 0 1 112,146 Z" fill="#c7cbd1"/>
+              <path d="M116,146 A12,12 0 0 1 140,146 Z" fill="#c7cbd1"/>
+            </g>
+            <g fill="none" stroke="#3f7fbf" stroke-width="3" stroke-linecap="round">
+              <path d="M20,160 Q45,152 70,160 T120,160 T170,160 T220,160"/>
+              <path d="M20,172 Q45,164 70,172 T120,172 T170,172 T220,172"/>
+              <path d="M20,184 Q45,176 70,184 T120,184 T170,184 T220,184"/>
+            </g>
+          </g>
+          <path d="M12,214 L40,208 L160,208 L188,214 L172,224 L188,234 L160,242 L40,242 L12,234 L28,224 Z" fill="#f5f0e1" stroke="#0a1220" stroke-width="2"/>
+          <text x="100" y="230" text-anchor="middle" font-family="Georgia, 'Times New Roman', serif" font-weight="700" font-size="17" fill="#15213a" letter-spacing="1">SANTULHÃO</text>
         </svg>
       </div>
       <div class="header-text">
@@ -662,7 +758,7 @@
 
     // Splash is purely decorative — always dismiss on its own timer,
     // completely independent of network/data loading so it can never hang.
-    setTimeout(hideSplash, 2200);
+    setTimeout(hideSplash, 2800);
 
     async function init() {
       let attempts = 0;
