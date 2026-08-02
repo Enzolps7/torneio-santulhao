@@ -52,16 +52,22 @@
       linear-gradient(180deg, var(--green-950), #041209 55%, #010a06 100%);
   }
 
-  .bg-grid {
+  .bg-pitch {
     position: absolute;
-    inset: -1px;
-    background-image:
-      linear-gradient(rgba(212, 175, 55, 0.09) 1px, transparent 1px),
-      linear-gradient(90deg, rgba(212, 175, 55, 0.09) 1px, transparent 1px);
-    background-size: 46px 46px;
+    inset: 0;
+    background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 400 700'><rect x='30' y='50' width='340' height='600' fill='none' stroke='%23d4af37' stroke-width='2'/><line x1='30' y1='350' x2='370' y2='350' stroke='%23d4af37' stroke-width='2'/><circle cx='200' cy='350' r='55' fill='none' stroke='%23d4af37' stroke-width='2'/><circle cx='200' cy='350' r='3' fill='%23d4af37'/><rect x='130' y='50' width='140' height='50' fill='none' stroke='%23d4af37' stroke-width='2'/><rect x='130' y='600' width='140' height='50' fill='none' stroke='%23d4af37' stroke-width='2'/><rect x='175' y='35' width='50' height='15' fill='none' stroke='%23d4af37' stroke-width='2'/><rect x='175' y='650' width='50' height='15' fill='none' stroke='%23d4af37' stroke-width='2'/><circle cx='200' cy='90' r='2' fill='%23d4af37'/><circle cx='200' cy='610' r='2' fill='%23d4af37'/></svg>");
+    background-repeat: no-repeat;
+    background-position: top center;
+    background-size: min(94vw, 520px) auto;
+    opacity: 0.38;
     -webkit-mask-image: radial-gradient(ellipse 90% 90% at 50% 20%, black 35%, transparent 100%);
     mask-image: radial-gradient(ellipse 90% 90% at 50% 20%, black 35%, transparent 100%);
-    animation: gridDrift 40s linear infinite;
+    animation: pitchBreathe 8s ease-in-out infinite;
+  }
+
+  @keyframes pitchBreathe {
+    0%, 100% { opacity: 0.3; transform: scale(1); }
+    50% { opacity: 0.46; transform: scale(1.015); }
   }
 
   .bg-sweep {
@@ -74,11 +80,6 @@
   @keyframes sweepMove {
     0%, 100% { transform: translateX(-25%) translateY(-10%); }
     50% { transform: translateX(15%) translateY(10%); }
-  }
-
-  @keyframes gridDrift {
-    from { background-position: 0 0, 0 0; }
-    to { background-position: 46px 92px, 46px 92px; }
   }
 
   .orb {
@@ -853,7 +854,7 @@
 </head>
 <body>
   <div class="bg-glow">
-    <div class="bg-grid"></div>
+    <div class="bg-pitch"></div>
     <div class="bg-sweep"></div>
     <div class="orb orb-1"></div>
     <div class="orb orb-2"></div>
