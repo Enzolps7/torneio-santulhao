@@ -921,15 +921,35 @@
       state.teams.forEach(t => html += `<option value="${t.id}">${escape(t.name)}</option>`);
       html += '</select><input type="text" id="player-name" placeholder="Nome do jogador" /><button class="btn-small" onclick="addPlayer()">Adicionar</button></div></div>';
 
-      html += '<div class="admin-section"><h3>Resultados</h3>';
+      const teamOptions = state.teams.map(t => `<option value="${t.id}">${escape(t.name)}</option>`).join('');
+      html += `<div class="admin-section"><h3>Criar Jogo</h3><div class="form-row">
+        <select id="match-stage" onchange="document.getElementById('match-group').style.display = this.value === 'group' ? '' : 'none'">
+          <option value="group">Fase de Grupos</option>
+          <option value="semi">Meia-Final</option>
+          <option value="third_place">3º Lugar</option>
+          <option value="final">Final</option>
+        </select>
+        <select id="match-group"><option value="A">Grupo A</option><option value="B">Grupo B</option></select>
+        <select id="match-team1"><option value="">Equipa 1</option>${teamOptions}</select>
+        <select id="match-team2"><option value="">Equipa 2</option>${teamOptions}</select>
+        <input type="datetime-local" id="match-date" />
+        <button class="btn-small" onclick="createMatch()">Criar Jogo</button>
+      </div></div>`;
+
+      html += '<div class="admin-section"><h3>Jogos e Horários</h3>';
       if (state.matches.length) {
         state.matches.forEach(m => {
           html += `<div class="team-item" style="flex-direction: column; align-items: flex-start;">
             <strong>${escape(m.team1?.name || 'TBD')} vs ${escape(m.team2?.name || 'TBD')}</strong>
-            <div style="width: 100%; margin-top: 10px; display: flex; gap: 10px;">
+            <div style="width: 100%; margin-top: 10px; display: flex; gap: 10px; flex-wrap: wrap;">
+              <input type="datetime-local" id="sched-${m.id}" value="${toLocalInputValue(m.scheduled_at)}" />
+              <button class="btn-small" onclick="updateSchedule('${m.id}')">Guardar Data</button>
+            </div>
+            <div style="width: 100%; margin-top: 10px; display: flex; gap: 10px; flex-wrap: wrap;">
               <input type="number" min="0" id="score1-${m.id}" value="${m.score1 || ''}" placeholder="Golos 1" />
               <input type="number" min="0" id="score2-${m.id}" value="${m.score2 || ''}" placeholder="Golos 2" />
-              <button class="btn-small" onclick="saveResult('${m.id}')">Guardar</button>
+              <button class="btn-small" onclick="saveResult('${m.id}')">Guardar Resultado</button>
+              <button class="btn-small btn-danger" onclick="deleteMatch('${m.id}')">Remover</button>
             </div>
           </div>`;
         });
@@ -1011,12 +1031,56 @@
       renderAdmin();
     }
 
+    function toLocalInputValue(dateStr) {
+      if (!dateStr) return '';
+      const d = new Date(dateStr);
+      const pad = n => String(n).padStart(2, '0');
+      return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
+    }
+
+    async function createMatch() {
+      const stage = document.getElementById('match-stage')?.value;
+      const groupName = document.getElementById('match-group')?.value;
+      const team1Id = document.getElementById('match-team1')?.value;
+      const team2Id = document.getElementById('match-team2')?.value;
+      const dateVal = document.getElementById('match-date')?.value;
+      if (!team1Id || !team2Id) return alert('Selecione as duas equipas');
+      if (team1Id === team2Id) return alert('As equipas devem ser diferentes');
+      const payload = {
+        stage,
+        team1_id: team1Id,
+        team2_id: team2Id,
+        scheduled_at: dateVal ? new Date(dateVal).toISOString() : null
+      };
+      if (stage === 'group') payload.group_name = groupName;
+      await db.from('matches').insert(payload);
+      await loadData();
+      renderAdmin();
+    }
+
+    async function updateSchedule(matchId) {
+      const dateVal = document.getElementById(`sched-${matchId}`)?.value;
+      await db.from('matches').update({ scheduled_at: dateVal ? new Date(dateVal).toISOString() : null }).eq('id', matchId);
+      await loadData();
+      renderAdmin();
+    }
+
+    async function deleteMatch(id) {
+      if (!confirm('Remover este jogo?')) return;
+      await db.from('matches').delete().eq('id', id);
+      await loadData();
+      renderAdmin();
+    }
+
     window.adminLogin = adminLogin;
     window.adminLogout = adminLogout;
     window.addTeam = addTeam;
     window.deleteTeam = deleteTeam;
     window.addPlayer = addPlayer;
     window.saveResult = saveResult;
+    window.createMatch = createMatch;
+    window.updateSchedule = updateSchedule;
+    window.deleteMatch = deleteMatch;
 
     init();
   </script>
