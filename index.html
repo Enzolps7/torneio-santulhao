@@ -994,6 +994,17 @@
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script>
+    // Version check - force hard refresh if cached version detected
+    const CURRENT_VERSION = '20260802182836';
+    const STORAGE_KEY = 'santulhao_page_version';
+    const storedVersion = localStorage.getItem(STORAGE_KEY);
+    if (storedVersion && storedVersion !== CURRENT_VERSION) {
+      localStorage.setItem(STORAGE_KEY, CURRENT_VERSION);
+      window.location.reload(true);
+    } else {
+      localStorage.setItem(STORAGE_KEY, CURRENT_VERSION);
+    }
+
     let db, state = { session: null, teams: [], matches: [], tab: 'calendar', loading: true };
     // Force calendar as default tab
     const DEFAULT_TAB = 'calendar';
