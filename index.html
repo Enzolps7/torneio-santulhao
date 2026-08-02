@@ -1140,14 +1140,17 @@
       const gt = teams.filter(t => t.group_name === group);
       const table = {};
       gt.forEach(t => table[t.id] = { team: t, pj: 0, v: 0, e: 0, d: 0, gm: 0, gs: 0, pts: 0 });
-      matches.filter(m => m.stage === 'group' && m.group_name === group && m.played).forEach(m => {
+      matches.filter(m => m.stage === 'group' && m.group_name === group && (m.played || (m.goals && m.goals.length > 0))).forEach(m => {
         const r1 = table[m.team1_id], r2 = table[m.team2_id];
         if (!r1 || !r2) return;
+        // Calculate scores from goals if available, otherwise use score1/score2
+        const score1 = m.goals ? (m.goals.filter(g => g.team_id === m.team1_id).length) : (m.score1 || 0);
+        const score2 = m.goals ? (m.goals.filter(g => g.team_id === m.team2_id).length) : (m.score2 || 0);
         r1.pj++; r2.pj++;
-        r1.gm += m.score1; r1.gs += m.score2;
-        r2.gm += m.score2; r2.gs += m.score1;
-        if (m.score1 > m.score2) { r1.v++; r1.pts += 3; r2.d++; }
-        else if (m.score1 < m.score2) { r2.v++; r2.pts += 3; r1.d++; }
+        r1.gm += score1; r1.gs += score2;
+        r2.gm += score2; r2.gs += score1;
+        if (score1 > score2) { r1.v++; r1.pts += 3; r2.d++; }
+        else if (score1 < score2) { r2.v++; r2.pts += 3; r1.d++; }
         else { r1.e++; r2.e++; r1.pts++; r2.pts++; }
       });
       const rows = Object.values(table);
@@ -1375,19 +1378,21 @@
       html += '</select><input type="text" id="player-name" placeholder="Nome do jogador" /><button class="btn-small" onclick="addPlayer()">Adicionar</button></div></div>';
 
       html += `<div class="admin-section"><h3>⚽ Registar Golos em Tempo Real</h3>
-        <p class="empty-hint" style="margin-bottom: 12px;">Selecione um match e clique nos jogadores para registar os golos. O score é calculado automaticamente.</p>`;
+        <p class="empty-hint" style="margin-bottom: 12px;">Selecione um jogo e clique nos jogadores para registar os golos. O score é calculado automaticamente.</p>`;
 
-      const upcomingMatches = state.matches
-        .filter(m => m.team1_id && m.team2_id)
+      const activeMatches = state.matches
+        .filter(m => m.team1_id && m.team2_id && !m.played)
         .sort((a, b) => (a.scheduled_at || '').localeCompare(b.scheduled_at || ''));
 
-      if (upcomingMatches.length) {
-        html += '<div style="margin-bottom: 12px;"><label style="color: var(--gold-light); font-weight: 700;">Selecione um match:</label><div style="margin-top: 8px;">';
-        upcomingMatches.forEach(m => {
+      if (activeMatches.length) {
+        html += '<div style="margin-bottom: 12px;"><label style="color: var(--gold-light); font-weight: 700;">Selecione um jogo:</label><div style="margin-top: 8px;">';
+        activeMatches.forEach(m => {
           const date = m.scheduled_at ? new Date(m.scheduled_at).toLocaleString('pt-PT') : 'Data TBD';
           html += `<button class="btn-small" style="margin-bottom: 6px; width: 100%; text-align: left;" onclick="selectMatchForGoals('${m.id}')">${escape(m.team1?.name || 'TBD')} vs ${escape(m.team2?.name || 'TBD')} (${date})</button>`;
         });
         html += '</div></div>';
+      } else {
+        html += '<p class="empty-hint">Nenhum jogo ativo. Todos já foram finalizados!</p>';
       }
 
       html += `</div>`;
