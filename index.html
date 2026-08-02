@@ -760,7 +760,18 @@
     // completely independent of network/data loading so it can never hang.
     setTimeout(hideSplash, 2800);
 
+    function withTimeout(promise, ms) {
+      return Promise.race([
+        promise,
+        new Promise((_, reject) => setTimeout(() => reject(new Error('timeout')), ms))
+      ]);
+    }
+
     async function init() {
+      // Render nav + a visible loading state immediately — never block the UI on the network.
+      renderNav();
+      render();
+
       let attempts = 0;
       while (!window.supabase && attempts < 20) {
         await new Promise(r => setTimeout(r, 100));
@@ -768,6 +779,7 @@
       }
 
       if (!window.supabase) {
+        state.loading = false;
         document.getElementById('content').innerHTML = '<div class="card"><p class="empty-hint">⚠ Erro ao carregar. Recarregue a página.</p></div>';
         return;
       }
@@ -778,7 +790,7 @@
           'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJ3c2VyaWVndnR2amlkYmFjd3NhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODU2NzQwOTEsImV4cCI6MjEwMTI1MDA5MX0.fiddoMRn4I0E8gXwd6FMsa25xBW4i-_w5MmTfyCw6Ac'
         );
 
-        const session = await supabase.auth.getSession();
+        const session = await withTimeout(supabase.auth.getSession(), 8000);
         state.session = session.data.session;
 
         supabase.auth.onAuthStateChange((_evt, sess) => {
@@ -787,7 +799,7 @@
           render();
         });
 
-        await loadData();
+        await withTimeout(loadData(), 8000);
 
         supabase.channel('changes')
           .on('postgres_changes', { event: '*', schema: 'public' }, () => loadData().then(render))
