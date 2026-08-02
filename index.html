@@ -74,16 +74,22 @@
   </head>
   <body>
     <div id="app"></div>
-    <script async src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.39.0/+esm"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script>
-      window.addEventListener('load', async function() {
+      async function init() {
+        // Attendre que Supabase soit disponible
+        let attempts = 0;
+        while (!window.supabase && attempts < 20) {
+          await new Promise(r => setTimeout(r, 100));
+          attempts++;
+        }
+
         if (!window.supabase) {
-          document.body.innerHTML = '<div style="color:red;padding:20px;">Erreur: Supabase ne s\'a pas chargé. Rafraîchissez la page.</div>';
+          document.body.innerHTML = '<div style="color:red;padding:20px;font-family:monospace;">Erreur: Supabase ne s\'a pas chargé.<br>Status: ' + (window.supabase ? 'OK' : 'FAIL') + '<br><button onclick="location.reload()">Rafraîchir</button></div>';
           return;
         }
 
-        const { createClient } = window.supabase;
-        const supabase = createClient(
+        const supabase = window.supabase.createClient(
           'https://bwseriegvtvjidbacwsa.supabase.co',
           'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJ3c2VyaWVndnR2amlkYmFjd3NhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODU2NzQwOTEsImV4cCI6MjEwMTI1MDA5MX0.fiddoMRn4I0E8gXwd6FMsa25xBW4i-_w5MmTfyCw6Ac'
         );
@@ -277,7 +283,8 @@
           .on('postgres_changes', { event: '*', schema: 'public', table: 'matches' }, () => loadData().then(render))
           .on('postgres_changes', { event: '*', schema: 'public', table: 'goals' }, () => loadData().then(render))
           .subscribe();
-      });
+      }
+      init();
     </script>
   </body>
 </html>
