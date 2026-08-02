@@ -1389,6 +1389,7 @@
               <input type="number" min="0" id="score1-${m.id}" value="${m.score1 || ''}" placeholder="Golos 1" />
               <input type="number" min="0" id="score2-${m.id}" value="${m.score2 || ''}" placeholder="Golos 2" />
               <button class="btn-small" onclick="saveResult('${m.id}')">Guardar Resultado</button>
+              ${m.played ? `<button class="btn-small" style="background: linear-gradient(135deg, #d4af37, #f5dd8f);" onclick="clearResult('${m.id}')">Limpar</button>` : ''}
               <button class="btn-small btn-danger" onclick="deleteMatch('${m.id}')">Remover</button>
             </div>
           </div>`;
@@ -1472,6 +1473,13 @@
       renderAdmin();
     }
 
+    async function clearResult(matchId) {
+      if (!confirm('Remover o resultado e voltar a VS?')) return;
+      await db.from('matches').update({ score1: null, score2: null, played: false }).eq('id', matchId);
+      await loadData();
+      renderAdmin();
+    }
+
     function toLocalInputValue(dateStr) {
       if (!dateStr) return '';
       const d = new Date(dateStr);
@@ -1550,6 +1558,7 @@
     window.deleteTeam = deleteTeam;
     window.addPlayer = addPlayer;
     window.saveResult = saveResult;
+    window.clearResult = clearResult;
     window.generateGroupFixtures = generateGroupFixtures;
     window.updateSchedule = updateSchedule;
     window.deleteMatch = deleteMatch;
