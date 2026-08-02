@@ -1081,7 +1081,16 @@
         await withTimeout(loadData(), 8000);
 
         db.channel('changes')
-          .on('postgres_changes', { event: '*', schema: 'public' }, () => loadData().then(render))
+          .on('postgres_changes', { event: '*', schema: 'public' }, () => {
+            loadData().then(() => {
+              // Only re-render if not in goals panel
+              if (state.selectedMatchForGoals && document.getElementById('goals-panel')?.style.display === 'block') {
+                selectMatchForGoals(state.selectedMatchForGoals);
+              } else {
+                render();
+              }
+            });
+          })
           .subscribe();
       } catch (e) {
         console.error('Erro ao inicializar:', e);
