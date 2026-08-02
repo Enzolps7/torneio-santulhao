@@ -631,7 +631,7 @@
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script>
-    let supabase, state = { session: null, teams: [], matches: [], tab: 'standings', loading: true };
+    let db, state = { session: null, teams: [], matches: [], tab: 'standings', loading: true };
     const ADMIN_PASSWORD = 'Santulhao.7';
 
     function hideSplash() {
@@ -668,15 +668,15 @@
       }
 
       try {
-        supabase = window.supabase.createClient(
+        db = window.supabase.createClient(
           'https://bwseriegvtvjidbacwsa.supabase.co',
           'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJ3c2VyaWVndnR2amlkYmFjd3NhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODU2NzQwOTEsImV4cCI6MjEwMTI1MDA5MX0.fiddoMRn4I0E8gXwd6FMsa25xBW4i-_w5MmTfyCw6Ac'
         );
 
-        const session = await withTimeout(supabase.auth.getSession(), 8000);
+        const session = await withTimeout(db.auth.getSession(), 8000);
         state.session = session.data.session;
 
-        supabase.auth.onAuthStateChange((_evt, sess) => {
+        db.auth.onAuthStateChange((_evt, sess) => {
           state.session = sess;
           renderNav();
           render();
@@ -684,7 +684,7 @@
 
         await withTimeout(loadData(), 8000);
 
-        supabase.channel('changes')
+        db.channel('changes')
           .on('postgres_changes', { event: '*', schema: 'public' }, () => loadData().then(render))
           .subscribe();
       } catch (e) {
@@ -698,8 +698,8 @@
 
     async function loadData() {
       const [teams, matches] = await Promise.all([
-        supabase.from('teams').select('*, players(*)').order('group_name').order('name'),
-        supabase.from('matches').select('*, team1:team1_id(id,name,group_name), team2:team2_id(id,name,group_name), goals(id, player_id, team_id, players(id,name))').order('stage').order('scheduled_at', { ascending: true, nullsFirst: false })
+        db.from('teams').select('*, players(*)').order('group_name').order('name'),
+        db.from('matches').select('*, team1:team1_id(id,name,group_name), team2:team2_id(id,name,group_name), goals(id, player_id, team_id, players(id,name))').order('stage').order('scheduled_at', { ascending: true, nullsFirst: false })
       ]);
       state.teams = teams.data || [];
       state.matches = matches.data || [];
@@ -965,21 +965,21 @@
         return;
       }
       try {
-        await supabase.auth.signInWithPassword({ email: 'enzosantulhao7@gmail.com', password: 'Santulhao2026!Ouro' });
+        await db.auth.signInWithPassword({ email: 'enzosantulhao7@gmail.com', password: 'Santulhao2026!Ouro' });
       } catch (e) {
         alert('Erro na autenticação');
       }
     }
 
     async function adminLogout() {
-      await supabase.auth.signOut();
+      await db.auth.signOut();
     }
 
     async function addTeam() {
       const name = document.getElementById('team-name')?.value;
       const group = document.getElementById('team-group')?.value;
       if (!name) return alert('Nome obrigatório');
-      await supabase.from('teams').insert({ name, group_name: group });
+      await db.from('teams').insert({ name, group_name: group });
       document.getElementById('team-name').value = '';
       await loadData();
       renderAdmin();
@@ -987,7 +987,7 @@
 
     async function deleteTeam(id) {
       if (!confirm('Remover esta equipa?')) return;
-      await supabase.from('teams').delete().eq('id', id);
+      await db.from('teams').delete().eq('id', id);
       await loadData();
       renderAdmin();
     }
@@ -996,7 +996,7 @@
       const teamId = document.getElementById('team-sel')?.value;
       const name = document.getElementById('player-name')?.value;
       if (!teamId || !name) return alert('Selecione a equipa e o nome');
-      await supabase.from('players').insert({ team_id: teamId, name });
+      await db.from('players').insert({ team_id: teamId, name });
       document.getElementById('player-name').value = '';
       await loadData();
       renderAdmin();
@@ -1006,7 +1006,7 @@
       const score1 = parseInt(document.getElementById(`score1-${matchId}`)?.value);
       const score2 = parseInt(document.getElementById(`score2-${matchId}`)?.value);
       if (isNaN(score1) || isNaN(score2)) return alert('Scores inválidos');
-      await supabase.from('matches').update({ score1, score2, played: true }).eq('id', matchId);
+      await db.from('matches').update({ score1, score2, played: true }).eq('id', matchId);
       await loadData();
       renderAdmin();
     }
