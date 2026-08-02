@@ -1145,6 +1145,18 @@
       return String(str).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]);
     }
 
+    function getTeamName(match, slot) {
+      const teamId = slot === 1 ? match.team1_id : match.team2_id;
+      const placeholder = slot === 1 ? match.placeholder1 : match.placeholder2;
+      const team = state.teams.find(t => t.id === teamId);
+
+      // Show placeholder if match is in semi/final stage and team not yet determined
+      if ((match.stage === 'semi' || match.stage === 'final' || match.stage === 'third_place') && placeholder && !team?.name) {
+        return placeholder;
+      }
+      return escape(team?.name || 'TBD');
+    }
+
     function computeStandings(teams, matches, group) {
       const gt = teams.filter(t => t.group_name === group);
       const table = {};
@@ -1257,9 +1269,9 @@
         const semi1Score2 = (semi1.goals || []).filter(g => g.team_id === semi1.team2_id).length;
         html += `<div class="match-card">
           <div class="match-teams">
-            <span>${escape(semi1.team1?.name || 'TBD')}</span>
+            <span>${getTeamName(semi1, 1)}</span>
             <div class="score">${semi1.played || (semi1.goals && semi1.goals.length > 0) ? semi1Score1 + '-' + semi1Score2 : 'vs'}</div>
-            <span>${escape(semi1.team2?.name || 'TBD')}</span>
+            <span>${getTeamName(semi1, 2)}</span>
           </div>
         </div>`;
       }
@@ -1268,9 +1280,9 @@
         const semi2Score2 = (semi2.goals || []).filter(g => g.team_id === semi2.team2_id).length;
         html += `<div class="match-card">
           <div class="match-teams">
-            <span>${escape(semi2.team1?.name || 'TBD')}</span>
+            <span>${getTeamName(semi2, 1)}</span>
             <div class="score">${semi2.played || (semi2.goals && semi2.goals.length > 0) ? semi2Score1 + '-' + semi2Score2 : 'vs'}</div>
-            <span>${escape(semi2.team2?.name || 'TBD')}</span>
+            <span>${getTeamName(semi2, 2)}</span>
           </div>
         </div>`;
       }
@@ -1283,9 +1295,9 @@
         const finalScore2 = (final.goals || []).filter(g => g.team_id === final.team2_id).length;
         html += `<div class="match-card">
           <div class="match-teams">
-            <span>${escape(final.team1?.name || 'TBD')}</span>
+            <span>${getTeamName(final, 1)}</span>
             <div class="score">${final.played || (final.goals && final.goals.length > 0) ? finalScore1 + '-' + finalScore2 : 'vs'}</div>
-            <span>${escape(final.team2?.name || 'TBD')}</span>
+            <span>${getTeamName(final, 2)}</span>
           </div>
         </div>`;
       }
@@ -1294,9 +1306,9 @@
         const thirdScore2 = (third.goals || []).filter(g => g.team_id === third.team2_id).length;
         html += `<div class="match-card">
           <div class="match-teams">
-            <span>${escape(third.team1?.name || 'TBD')}</span>
+            <span>${getTeamName(third, 1)}</span>
             <div class="score">${third.played || (third.goals && third.goals.length > 0) ? thirdScore1 + '-' + thirdScore2 : 'vs'}</div>
-            <span>${escape(third.team2?.name || 'TBD')}</span>
+            <span>${getTeamName(third, 2)}</span>
           </div>
         </div>`;
       }
@@ -1677,8 +1689,8 @@
       const sb = computeStandings(state.teams, state.matches, 'B');
       if (sa.length < 2 || sb.length < 2) return alert('É preciso pelo menos 2 equipas classificadas em cada grupo');
       await db.from('matches').insert([
-        { stage: 'semi', semi_slot: 'semi1', team1_id: sa[0].team.id, team2_id: sb[1].team.id },
-        { stage: 'semi', semi_slot: 'semi2', team1_id: sb[0].team.id, team2_id: sa[1].team.id }
+        { stage: 'semi', semi_slot: 'semi1', team1_id: sa[0].team.id, team2_id: sb[1].team.id, placeholder1: '1º A', placeholder2: '2º B' },
+        { stage: 'semi', semi_slot: 'semi2', team1_id: sb[0].team.id, team2_id: sa[1].team.id, placeholder1: '1º B', placeholder2: '2º A' }
       ]);
       await loadData();
       render();
@@ -1707,8 +1719,8 @@
       const loser2 = semi2Score1 > semi2Score2 ? semi2.team2_id : semi2.team1_id;
 
       await db.from('matches').insert([
-        { stage: 'final', team1_id: winner1, team2_id: winner2 },
-        { stage: 'third_place', team1_id: loser1, team2_id: loser2 }
+        { stage: 'final', team1_id: winner1, team2_id: winner2, placeholder1: 'Vencedor SF1', placeholder2: 'Vencedor SF2' },
+        { stage: 'third_place', team1_id: loser1, team2_id: loser2, placeholder1: 'Perdedor SF1', placeholder2: 'Perdedor SF2' }
       ]);
       await loadData();
       render();
