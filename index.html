@@ -1181,10 +1181,13 @@
       if (ga.length) {
         html += '<div class="card fade-in"><h2>📅 Grupo A — Calendário</h2>';
         ga.forEach(m => {
+          const score1 = (m.goals || []).filter(g => g.team_id === m.team1_id).length;
+          const score2 = (m.goals || []).filter(g => g.team_id === m.team2_id).length;
+          const hasGoals = score1 > 0 || score2 > 0;
           html += `<div class="match-card">
             <div class="match-teams">
               <span>${escape(m.team1?.name || 'TBD')}</span>
-              <div class="score">${m.played ? m.score1 + '-' + m.score2 : 'vs'}</div>
+              <div class="score">${hasGoals || m.played ? score1 + '-' + score2 : 'vs'}</div>
               <span>${escape(m.team2?.name || 'TBD')}</span>
             </div>
             <div class="match-info">${m.scheduled_at ? new Date(m.scheduled_at).toLocaleString('pt-PT') : 'Data TBD'}</div>
@@ -1196,10 +1199,13 @@
       if (gb.length) {
         html += '<div class="card fade-in"><h2>📅 Grupo B — Calendário</h2>';
         gb.forEach(m => {
+          const score1 = (m.goals || []).filter(g => g.team_id === m.team1_id).length;
+          const score2 = (m.goals || []).filter(g => g.team_id === m.team2_id).length;
+          const hasGoals = score1 > 0 || score2 > 0;
           html += `<div class="match-card">
             <div class="match-teams">
               <span>${escape(m.team1?.name || 'TBD')}</span>
-              <div class="score">${m.played ? m.score1 + '-' + m.score2 : 'vs'}</div>
+              <div class="score">${hasGoals || m.played ? score1 + '-' + score2 : 'vs'}</div>
               <span>${escape(m.team2?.name || 'TBD')}</span>
             </div>
             <div class="match-info">${m.scheduled_at ? new Date(m.scheduled_at).toLocaleString('pt-PT') : 'Data TBD'}</div>
@@ -1574,31 +1580,24 @@
 
     async function addGoal(matchId, playerId, teamId) {
       await db.from('goals').insert({ match_id: matchId, player_id: playerId, team_id: teamId });
-      // Reload data and keep panel open - use setTimeout to ensure refresh
-      setTimeout(async () => {
-        await loadData();
-        selectMatchForGoals(matchId);
-      }, 100);
+      await loadData();
+      // Keep panel open - don't do full renderAdmin
+      selectMatchForGoals(matchId);
     }
 
     async function removeGoal(goalId, matchId) {
       await db.from('goals').delete().eq('id', goalId);
-      // Reload and refresh panel
-      setTimeout(async () => {
-        await loadData();
-        selectMatchForGoals(matchId);
-      }, 100);
+      await loadData();
+      // Keep panel open
+      selectMatchForGoals(matchId);
     }
 
     async function clearAllGoals(matchId) {
       if (!confirm('Remover TODOS os golos deste jogo?')) return;
       await db.from('goals').delete().eq('match_id', matchId);
       await db.from('matches').update({ score1: null, score2: null, played: false }).eq('id', matchId);
-      // Reload and refresh
-      setTimeout(async () => {
-        await loadData();
-        closeGoalsPanel();
-      }, 100);
+      await loadData();
+      closeGoalsPanel();
     }
 
     async function finishMatch(matchId, score1, score2) {
