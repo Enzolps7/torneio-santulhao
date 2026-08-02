@@ -276,7 +276,7 @@
       font-weight: 600;
     }
 
-    input, select {
+    input, select, textarea {
       width: 100%;
       padding: 12px 15px;
       background: var(--green-950);
@@ -285,22 +285,22 @@
       color: var(--cream);
       font-size: 1em;
       transition: all 0.3s ease;
+      font-family: inherit;
     }
 
-    input:focus, select:focus {
+    input:focus, select:focus, textarea:focus {
       outline: none;
       border-color: var(--gold);
       box-shadow: 0 0 15px rgba(212, 175, 55, 0.3);
     }
 
-    button.btn {
-      width: 100%;
-      padding: 14px;
+    button {
+      padding: 12px 24px;
       background: linear-gradient(135deg, var(--gold), var(--gold-light));
       color: var(--green-950);
       border: none;
       border-radius: 8px;
-      font-size: 1.1em;
+      font-size: 1em;
       font-weight: 700;
       cursor: pointer;
       text-transform: uppercase;
@@ -309,7 +309,7 @@
       box-shadow: 0 6px 20px rgba(212, 175, 55, 0.3);
     }
 
-    button.btn:hover {
+    button:hover {
       transform: translateY(-3px);
       box-shadow: 0 10px 30px rgba(212, 175, 55, 0.4);
     }
@@ -331,15 +331,12 @@
       display: flex;
       gap: 15px;
       margin-bottom: 15px;
+      flex-wrap: wrap;
     }
 
-    .form-row input {
+    .form-row input, .form-row select {
       flex: 1;
-    }
-
-    button.btn-small {
-      padding: 10px 20px;
-      font-size: 0.9em;
+      min-width: 150px;
     }
 
     .team-item {
@@ -397,6 +394,21 @@
       padding: 20px;
       text-align: center;
     }
+
+    .btn-small {
+      padding: 8px 16px;
+      font-size: 0.9em;
+      width: auto;
+    }
+
+    .btn-danger {
+      background: linear-gradient(135deg, var(--red), #c84242);
+    }
+
+    .logout-btn {
+      width: auto;
+      margin-bottom: 20px;
+    }
   </style>
 </head>
 <body>
@@ -411,13 +423,7 @@
   </header>
 
   <nav>
-    <div class="nav-container">
-      <button data-tab="standings" class="tab-btn active">📊 Classificação</button>
-      <button data-tab="calendar" class="tab-btn">📅 Calendário</button>
-      <button data-tab="bracket" class="tab-btn">🏅 Fase Final</button>
-      <button data-tab="scorers" class="tab-btn">⚽ Marcadores</button>
-      <button data-tab="admin" class="tab-btn">🔐 Admin</button>
-    </div>
+    <div class="nav-container" id="nav-buttons"></div>
   </nav>
 
   <main id="content"></main>
@@ -429,6 +435,7 @@
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script>
     let supabase, state = { session: null, teams: [], matches: [], tab: 'standings', loading: true };
+    const ADMIN_PASSWORD = 'Santulhao.7';
 
     async function init() {
       let attempts = 0;
@@ -452,21 +459,14 @@
 
       supabase.auth.onAuthStateChange((_evt, sess) => {
         state.session = sess;
+        renderNav();
         render();
       });
 
       await loadData();
       state.loading = false;
+      renderNav();
       render();
-
-      document.querySelectorAll('.tab-btn').forEach(btn => {
-        btn.addEventListener('click', () => {
-          document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-          btn.classList.add('active');
-          state.tab = btn.dataset.tab;
-          render();
-        });
-      });
 
       supabase.channel('changes')
         .on('postgres_changes', { event: '*', schema: 'public' }, () => loadData().then(render))
@@ -480,6 +480,31 @@
       ]);
       state.teams = teams.data || [];
       state.matches = matches.data || [];
+    }
+
+    function renderNav() {
+      const tabs = [
+        { id: 'standings', label: '📊 Classificação' },
+        { id: 'calendar', label: '📅 Calendário' },
+        { id: 'bracket', label: '🏅 Fase Final' },
+        { id: 'scorers', label: '⚽ Marcadores' },
+        { id: 'admin', label: '🔐 Admin' }
+      ];
+
+      let html = '';
+      tabs.forEach(tab => {
+        html += `<button data-tab="${tab.id}" class="tab-btn ${state.tab === tab.id ? 'active' : ''}">${tab.label}</button>`;
+      });
+
+      document.getElementById('nav-buttons').innerHTML = html;
+
+      document.querySelectorAll('.tab-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+          state.tab = btn.dataset.tab;
+          renderNav();
+          render();
+        });
+      });
     }
 
     function escape(str) {
@@ -512,11 +537,11 @@
       let html = '<div class="card"><h2>📊 Classificação dos Grupos</h2><div class="groups-grid">';
 
       html += '<div><h3>Grupo A</h3>' + (sa.length ? '<table><thead><tr><th>Equipa</th><th>J</th><th>V</th><th>E</th><th>D</th><th>GM</th><th>GS</th><th>DG</th><th>Pts</th></tr></thead><tbody>' +
-        sa.map((r, i) => `<tr><td>${escape(r.team.name)}</td><td>${r.pj}</td><td>${r.v}</td><td>${r.e}</td><td>${r.d}</td><td>${r.gm}</td><td>${r.gs}</td><td>${r.gd}</td><td><strong>${r.pts}</strong></td></tr>`).join('') +
+        sa.map(r => `<tr><td>${escape(r.team.name)}</td><td>${r.pj}</td><td>${r.v}</td><td>${r.e}</td><td>${r.d}</td><td>${r.gm}</td><td>${r.gs}</td><td>${r.gd}</td><td><strong>${r.pts}</strong></td></tr>`).join('') +
         '</tbody></table>' : '<p class="empty-hint">Aguardando equipas...</p>') + '</div>';
 
       html += '<div><h3>Grupo B</h3>' + (sb.length ? '<table><thead><tr><th>Equipa</th><th>J</th><th>V</th><th>E</th><th>D</th><th>GM</th><th>GS</th><th>DG</th><th>Pts</th></tr></thead><tbody>' +
-        sb.map((r, i) => `<tr><td>${escape(r.team.name)}</td><td>${r.pj}</td><td>${r.v}</td><td>${r.e}</td><td>${r.d}</td><td>${r.gm}</td><td>${r.gs}</td><td>${r.gd}</td><td><strong>${r.pts}</strong></td></tr>`).join('') +
+        sb.map(r => `<tr><td>${escape(r.team.name)}</td><td>${r.pj}</td><td>${r.v}</td><td>${r.e}</td><td>${r.d}</td><td>${r.gm}</td><td>${r.gs}</td><td>${r.gd}</td><td><strong>${r.pts}</strong></td></tr>`).join('') +
         '</tbody></table>' : '<p class="empty-hint">Aguardando equipas...</p>') + '</div>';
 
       html += '</div></div>';
@@ -642,33 +667,45 @@
 
     async function renderAdmin() {
       if (!state.session) {
-        let html = '<div class="login-box"><h2>Admin</h2><div class="form-group"><label>Senha:</label><input type="password" id="admin-pwd" placeholder="Insira a senha" /></div><button class="btn" onclick="adminLogin()">Entrar</button></div>';
+        let html = '<div class="login-box"><h2>🔐 Admin</h2><div class="form-group"><label>Senha:</label><input type="password" id="admin-pwd" placeholder="Insira a senha" /></div><button onclick="adminLogin()">Entrar</button></div>';
         document.getElementById('content').innerHTML = html;
         return;
       }
 
       let html = '<div class="card"><h2>⚙️ Painel Admin</h2>';
-      html += '<button class="btn btn-small" onclick="adminLogout()" style="width: auto; margin-bottom: 20px;">Sair</button>';
+      html += '<button class="btn-small btn-danger logout-btn" onclick="adminLogout()">Sair</button>';
 
-      html += '<div class="admin-section"><h3>Adicionar Equipa</h3><div class="form-row"><input type="text" id="team-name" placeholder="Nome da equipa" /><select id="team-group"><option value="A">Grupo A</option><option value="B">Grupo B</option></select><button class="btn btn-small" onclick="addTeam()">Adicionar</button></div></div>';
+      html += '<div class="admin-section"><h3>Adicionar Equipa</h3><div class="form-row"><input type="text" id="team-name" placeholder="Nome da equipa" /><select id="team-group"><option value="A">Grupo A</option><option value="B">Grupo B</option></select><button class="btn-small" onclick="addTeam()">Adicionar</button></div></div>';
 
       html += '<div class="admin-section"><h3>Equipas Registadas</h3>';
-      state.teams.forEach(t => {
-        html += `<div class="team-item"><div><strong>${escape(t.name)}</strong> (Grupo ${t.group_name})<br><small>${(t.players || []).map(p => escape(p.name)).join(', ')}</small></div><button class="btn btn-small" onclick="deleteTeam('${t.id}')" style="width: auto;">Remover</button></div>`;
-      });
+      if (state.teams.length) {
+        state.teams.forEach(t => {
+          html += `<div class="team-item"><div><strong>${escape(t.name)}</strong> (Grupo ${t.group_name})<br><small>${(t.players || []).map(p => escape(p.name)).join(', ')}</small></div><button class="btn-small btn-danger" onclick="deleteTeam('${t.id}')">Remover</button></div>`;
+        });
+      } else {
+        html += '<p class="empty-hint">Sem equipas ainda</p>';
+      }
       html += '</div>';
 
-      html += '<div class="admin-section"><h3>Adicionar Jogador a Equipa</h3><select id="team-sel"><option value="">Selecionar equipa</option>';
+      html += '<div class="admin-section"><h3>Adicionar Jogador</h3><div class="form-row"><select id="team-sel"><option value="">Selecionar equipa</option>';
       state.teams.forEach(t => html += `<option value="${t.id}">${escape(t.name)}</option>`);
-      html += '</select><input type="text" id="player-name" placeholder="Nome do jogador" style="margin-top: 10px;" /><button class="btn btn-small" onclick="addPlayer()" style="margin-top: 10px;">Adicionar</button></div>';
+      html += '</select><input type="text" id="player-name" placeholder="Nome do jogador" /><button class="btn-small" onclick="addPlayer()">Adicionar</button></div></div>';
 
       html += '<div class="admin-section"><h3>Resultados</h3>';
-      state.matches.forEach(m => {
-        html += `<div class="team-item" style="flex-direction: column; align-items: flex-start;">
-          <strong>${escape(m.team1?.name || 'TBD')} vs ${escape(m.team2?.name || 'TBD')}</strong>
-          <div style="width: 100%; margin-top: 10px;"><input type="number" min="0" id="score1-${m.id}" value="${m.score1 || ''}" placeholder="Golos 1" style="width: 48%;" /><input type="number" min="0" id="score2-${m.id}" value="${m.score2 || ''}" placeholder="Golos 2" style="width: 48%; margin-left: 4%;" /><button class="btn btn-small" onclick="saveResult('${m.id}')" style="width: 100%; margin-top: 10px;">Guardar</button></div>
-        </div>`;
-      });
+      if (state.matches.length) {
+        state.matches.forEach(m => {
+          html += `<div class="team-item" style="flex-direction: column; align-items: flex-start;">
+            <strong>${escape(m.team1?.name || 'TBD')} vs ${escape(m.team2?.name || 'TBD')}</strong>
+            <div style="width: 100%; margin-top: 10px; display: flex; gap: 10px;">
+              <input type="number" min="0" id="score1-${m.id}" value="${m.score1 || ''}" placeholder="Golos 1" />
+              <input type="number" min="0" id="score2-${m.id}" value="${m.score2 || ''}" placeholder="Golos 2" />
+              <button class="btn-small" onclick="saveResult('${m.id}')">Guardar</button>
+            </div>
+          </div>`;
+        });
+      } else {
+        html += '<p class="empty-hint">Sem jogos ainda</p>';
+      }
       html += '</div></div>';
 
       document.getElementById('content').innerHTML = html;
@@ -692,12 +729,16 @@
     }
 
     async function adminLogin() {
-      const pwd = document.getElementById('admin-pwd').value;
-      if (pwd !== 'Santulhao.7') {
+      const pwd = document.getElementById('admin-pwd')?.value;
+      if (pwd !== ADMIN_PASSWORD) {
         alert('Senha incorreta');
         return;
       }
-      await supabase.auth.signInWithPassword({ email: 'enzosantulhao7@gmail.com', password: 'Santulhao2026!Ouro' });
+      try {
+        await supabase.auth.signInWithPassword({ email: 'enzosantulhao7@gmail.com', password: 'Santulhao2026!Ouro' });
+      } catch (e) {
+        alert('Erro na autenticação');
+      }
     }
 
     async function adminLogout() {
@@ -705,39 +746,39 @@
     }
 
     async function addTeam() {
-      const name = document.getElementById('team-name').value;
-      const group = document.getElementById('team-group').value;
+      const name = document.getElementById('team-name')?.value;
+      const group = document.getElementById('team-group')?.value;
       if (!name) return alert('Nome obrigatório');
       await supabase.from('teams').insert({ name, group_name: group });
       document.getElementById('team-name').value = '';
       await loadData();
-      render();
+      renderAdmin();
     }
 
     async function deleteTeam(id) {
-      if (!confirm('Tem a certeza?')) return;
+      if (!confirm('Remover esta equipa?')) return;
       await supabase.from('teams').delete().eq('id', id);
       await loadData();
-      render();
+      renderAdmin();
     }
 
     async function addPlayer() {
-      const teamId = document.getElementById('team-sel').value;
-      const name = document.getElementById('player-name').value;
-      if (!teamId || !name) return alert('Todos os campos obrigatórios');
+      const teamId = document.getElementById('team-sel')?.value;
+      const name = document.getElementById('player-name')?.value;
+      if (!teamId || !name) return alert('Selecione a equipa e o nome');
       await supabase.from('players').insert({ team_id: teamId, name });
       document.getElementById('player-name').value = '';
       await loadData();
-      render();
+      renderAdmin();
     }
 
     async function saveResult(matchId) {
-      const score1 = parseInt(document.getElementById(`score1-${matchId}`).value);
-      const score2 = parseInt(document.getElementById(`score2-${matchId}`).value);
+      const score1 = parseInt(document.getElementById(`score1-${matchId}`)?.value);
+      const score2 = parseInt(document.getElementById(`score2-${matchId}`)?.value);
       if (isNaN(score1) || isNaN(score2)) return alert('Scores inválidos');
       await supabase.from('matches').update({ score1, score2, played: true }).eq('id', matchId);
       await loadData();
-      render();
+      renderAdmin();
     }
 
     window.adminLogin = adminLogin;
