@@ -1410,14 +1410,16 @@
         <p class="empty-hint" style="margin-bottom: 12px;">Selecione um jogo e clique nos jogadores para registar os golos. O score é calculado automaticamente.</p>`;
 
       const activeMatches = state.matches
-        .filter(m => m.team1_id && m.team2_id && !m.played)
+        .filter(m => !m.played && (m.team1_id || m.placeholder1))
         .sort((a, b) => (a.scheduled_at || '').localeCompare(b.scheduled_at || ''));
 
       if (activeMatches.length) {
         html += '<div style="margin-bottom: 12px;"><label style="color: var(--gold-light); font-weight: 700;">Selecione um jogo:</label><div style="margin-top: 8px;">';
         activeMatches.forEach(m => {
           const date = m.scheduled_at ? new Date(m.scheduled_at).toLocaleString('pt-PT') : 'Data TBD';
-          html += `<button class="btn-small" style="margin-bottom: 6px; width: 100%; text-align: left;" onclick="selectMatchForGoals('${m.id}')">${escape(m.team1?.name || 'TBD')} vs ${escape(m.team2?.name || 'TBD')} (${date})</button>`;
+          const team1Name = getTeamName(m, 1);
+          const team2Name = getTeamName(m, 2);
+          html += `<button class="btn-small" style="margin-bottom: 6px; width: 100%; text-align: left;" onclick="selectMatchForGoals('${m.id}')">${team1Name} vs ${team2Name} (${date})</button>`;
         });
         html += '</div></div>';
       } else {
@@ -1677,6 +1679,25 @@
           }
         }
       });
+
+      // Also create semifinal and final matches with placeholders
+      const existingSemis = state.matches.filter(m => m.stage === 'semi').length;
+      const existingFinals = state.matches.filter(m => m.stage === 'final' || m.stage === 'third_place').length;
+
+      if (existingSemis === 0) {
+        toInsert.push(
+          { stage: 'semi', semi_slot: 'semi1', team1_id: null, team2_id: null, placeholder1: '1º A', placeholder2: '2º B' },
+          { stage: 'semi', semi_slot: 'semi2', team1_id: null, team2_id: null, placeholder1: '1º B', placeholder2: '2º A' }
+        );
+      }
+
+      if (existingFinals === 0) {
+        toInsert.push(
+          { stage: 'final', team1_id: null, team2_id: null, placeholder1: 'Vencedor SF1', placeholder2: 'Vencedor SF2' },
+          { stage: 'third_place', team1_id: null, team2_id: null, placeholder1: 'Perdedor SF1', placeholder2: 'Perdedor SF2' }
+        );
+      }
+
       if (toInsert.length) {
         await db.from('matches').insert(toInsert);
         await loadData();
