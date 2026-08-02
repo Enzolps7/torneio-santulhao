@@ -1405,10 +1405,8 @@
               <button class="btn-small" onclick="updateSchedule('${m.id}')">Guardar Data</button>
             </div>
             <div style="width: 100%; margin-top: 10px; display: flex; gap: 10px; flex-wrap: wrap;">
-              <input type="number" min="0" id="score1-${m.id}" value="${m.score1 || ''}" placeholder="Golos 1" />
-              <input type="number" min="0" id="score2-${m.id}" value="${m.score2 || ''}" placeholder="Golos 2" />
-              <button class="btn-small" onclick="saveResult('${m.id}')">Guardar Resultado</button>
-              ${m.played ? `<button class="btn-small" style="background: linear-gradient(135deg, #d4af37, #f5dd8f);" onclick="clearResult('${m.id}')">Limpar</button>` : ''}
+              <button class="btn-small" onclick="selectMatchForGoals('${m.id}')">📊 Resultado: ${m.played ? m.score1 + '-' + m.score2 : 'VS'}</button>
+              ${m.played ? `<button class="btn-small" style="background: linear-gradient(135deg, #d4af37, #f5dd8f);" onclick="clearAllGoals('${m.id}')">🗑️ Limpar Golos</button>` : ''}
               <button class="btn-small btn-danger" onclick="deleteMatch('${m.id}')">Remover</button>
             </div>
           </div>`;
@@ -1533,7 +1531,7 @@
       if (team1?.players?.length) {
         team1.players.forEach(p => {
           const playerGoals = currentGoals.filter(g => g.player_id === p.id).length;
-          html += `<button class="btn-small" style="width: 100%; margin-bottom: 6px; text-align: left; background: rgba(212, 175, 55, 0.2);" onclick="addGoal('${matchId}', '${p.id}', '${match.team1_id}', true)">${escape(p.name)} ${playerGoals > 0 ? `<span style="color: var(--gold);">(${playerGoals})</span>` : ''}</button>`;
+          html += `<button class="btn-small" style="width: 100%; margin-bottom: 6px; text-align: left; background: rgba(212, 175, 55, 0.2);" onclick="addGoal('${matchId}', '${p.id}', '${match.team1_id}')">${escape(p.name)} ${playerGoals > 0 ? `<span style="color: var(--gold);">(${playerGoals})</span>` : ''}</button>`;
         });
       } else {
         html += `<p class="empty-hint">Sem jogadores</p>`;
@@ -1545,12 +1543,26 @@
       if (team2?.players?.length) {
         team2.players.forEach(p => {
           const playerGoals = currentGoals.filter(g => g.player_id === p.id).length;
-          html += `<button class="btn-small" style="width: 100%; margin-bottom: 6px; text-align: left; background: rgba(212, 175, 55, 0.2);" onclick="addGoal('${matchId}', '${p.id}', '${match.team2_id}', true)">${escape(p.name)} ${playerGoals > 0 ? `<span style="color: var(--gold);">(${playerGoals})</span>` : ''}</button>`;
+          html += `<button class="btn-small" style="width: 100%; margin-bottom: 6px; text-align: left; background: rgba(212, 175, 55, 0.2);" onclick="addGoal('${matchId}', '${p.id}', '${match.team2_id}')">${escape(p.name)} ${playerGoals > 0 ? `<span style="color: var(--gold);">(${playerGoals})</span>` : ''}</button>`;
         });
       } else {
         html += `<p class="empty-hint">Sem jogadores</p>`;
       }
       html += `</div>`;
+
+      // Golos registados com opção de remover
+      if (currentGoals.length) {
+        html += `<div style="margin-top: 16px; padding-top: 16px; border-top: 1px solid rgba(212, 175, 55, 0.3);">
+          <h4 style="color: var(--gold-light); margin-bottom: 8px;">⚽ Golos Registados (${currentGoals.length})</h4>`;
+        currentGoals.forEach((g, idx) => {
+          const player = state.teams.flatMap(t => t.players || []).find(p => p.id === g.player_id);
+          html += `<div style="display: flex; justify-content: space-between; align-items: center; padding: 6px 8px; background: rgba(212, 175, 55, 0.1); margin-bottom: 4px; border-radius: 4px;">
+            <span>${idx + 1}. ${escape(player?.name || 'Desconhecido')}</span>
+            <button class="btn-small" style="padding: 4px 8px; font-size: 0.75em;" onclick="removeGoal('${g.id}', '${matchId}')">✕</button>
+          </div>`;
+        });
+        html += `</div>`;
+      }
 
       html += `</div>`;
       html += `<div style="margin-top: 16px;"><button class="btn-small" style="width: 100%;" onclick="finishMatch('${matchId}', ${score1}, ${score2})">✅ Finalizar Jogo (${score1}-${score2})</button></div>`;
@@ -1562,9 +1574,31 @@
 
     async function addGoal(matchId, playerId, teamId) {
       await db.from('goals').insert({ match_id: matchId, player_id: playerId, team_id: teamId });
-      // Reload data and keep panel open
-      await loadData();
-      selectMatchForGoals(matchId);
+      // Reload data and keep panel open - use setTimeout to ensure refresh
+      setTimeout(async () => {
+        await loadData();
+        selectMatchForGoals(matchId);
+      }, 100);
+    }
+
+    async function removeGoal(goalId, matchId) {
+      await db.from('goals').delete().eq('id', goalId);
+      // Reload and refresh panel
+      setTimeout(async () => {
+        await loadData();
+        selectMatchForGoals(matchId);
+      }, 100);
+    }
+
+    async function clearAllGoals(matchId) {
+      if (!confirm('Remover TODOS os golos deste jogo?')) return;
+      await db.from('goals').delete().eq('match_id', matchId);
+      await db.from('matches').update({ score1: null, score2: null, played: false }).eq('id', matchId);
+      // Reload and refresh
+      setTimeout(async () => {
+        await loadData();
+        closeGoalsPanel();
+      }, 100);
     }
 
     async function finishMatch(matchId, score1, score2) {
@@ -1666,6 +1700,8 @@
     window.toggleTeam = toggleTeam;
     window.selectMatchForGoals = selectMatchForGoals;
     window.addGoal = addGoal;
+    window.removeGoal = removeGoal;
+    window.clearAllGoals = clearAllGoals;
     window.finishMatch = finishMatch;
     window.closeGoalsPanel = closeGoalsPanel;
 
