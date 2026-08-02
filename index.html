@@ -1679,25 +1679,6 @@
           }
         }
       });
-
-      // Also create semifinal and final matches with placeholders
-      const existingSemis = state.matches.filter(m => m.stage === 'semi').length;
-      const existingFinals = state.matches.filter(m => m.stage === 'final' || m.stage === 'third_place').length;
-
-      if (existingSemis === 0) {
-        toInsert.push(
-          { stage: 'semi', semi_slot: 'semi1', team1_id: null, team2_id: null, placeholder1: '1º A', placeholder2: '2º B' },
-          { stage: 'semi', semi_slot: 'semi2', team1_id: null, team2_id: null, placeholder1: '1º B', placeholder2: '2º A' }
-        );
-      }
-
-      if (existingFinals === 0) {
-        toInsert.push(
-          { stage: 'final', team1_id: null, team2_id: null, placeholder1: 'Vencedor SF1', placeholder2: 'Vencedor SF2' },
-          { stage: 'third_place', team1_id: null, team2_id: null, placeholder1: 'Perdedor SF1', placeholder2: 'Perdedor SF2' }
-        );
-      }
-
       if (toInsert.length) {
         await db.from('matches').insert(toInsert);
         await loadData();
