@@ -391,6 +391,8 @@
     align-items: center;
     justify-content: center;
     gap: 20px;
+    flex-direction: column;
+    text-align: center;
   }
 
   .logo-blason {
@@ -992,6 +994,8 @@
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script>
     let db, state = { session: null, teams: [], matches: [], tab: 'calendar', loading: true };
+    // Force calendar as default tab
+    const DEFAULT_TAB = 'calendar';
     const ADMIN_PASSWORD = 'Santulhao.7';
 
     function hideSplash() {
@@ -1076,10 +1080,15 @@
         { id: 'calendar', label: '📅 Calendário' },
         { id: 'standings', label: '📊 Classificação' },
         { id: 'bracket', label: '🏅 Fase Final' },
-        { id: 'scorers', label: '⚽ Marcadores' },
-        { id: 'teams', label: '👥 Equipas' },
-        { id: 'admin', label: '🔐 Admin' }
+        { id: 'scorers', label: '⚽ Marcadores' }
       ];
+
+      // Only show teams tab if we have teams
+      if (state.teams.length > 0) {
+        tabs.push({ id: 'teams', label: '👥 Equipas' });
+      }
+
+      tabs.push({ id: 'admin', label: '🔐 Admin' });
 
       let html = '';
       tabs.forEach(tab => {
