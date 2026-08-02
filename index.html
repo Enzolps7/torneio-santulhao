@@ -1,290 +1,753 @@
 <!doctype html>
 <html lang="pt-PT">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Torneio de Santulhão 2026</title>
-    <style>
-      :root {
-        --green-950: #06231a;
-        --green-900: #0b3d2e;
-        --green-800: #114d3a;
-        --green-700: #17614a;
-        --gold: #d4af37;
-        --gold-light: #f0d878;
-        --cream: #f5f0e1;
-        --red: #b3382c;
-        --radius: 10px;
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Torneio de Santulhão 2026</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    :root {
+      --green-950: #06231a;
+      --green-900: #0b3d2e;
+      --green-800: #114d3a;
+      --green-700: #17614a;
+      --gold: #d4af37;
+      --gold-light: #f0d878;
+      --cream: #f5f0e1;
+      --red: #b3382c;
+    }
+
+    body {
+      font-family: 'Segoe UI', Roboto, Arial, sans-serif;
+      background: linear-gradient(135deg, #06231a 0%, #0b3d2e 50%, #06231a 100%);
+      color: var(--cream);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    header {
+      background: linear-gradient(90deg, rgba(6, 35, 26, 0.95), rgba(17, 77, 58, 0.95));
+      border-bottom: 3px solid var(--gold);
+      padding: 20px;
+      box-shadow: 0 8px 32px rgba(212, 175, 55, 0.2);
+      animation: slideDown 0.6s ease-out;
+    }
+
+    @keyframes slideDown {
+      from { transform: translateY(-100%); opacity: 0; }
+      to { transform: translateY(0); opacity: 1; }
+    }
+
+    .header-content {
+      max-width: 1200px;
+      margin: 0 auto;
+      display: flex;
+      align-items: center;
+      gap: 20px;
+    }
+
+    .logo-blason {
+      width: 80px;
+      height: 80px;
+      background: linear-gradient(135deg, var(--gold), var(--gold-light));
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 40px;
+      box-shadow: 0 4px 15px rgba(212, 175, 55, 0.4);
+      animation: spin 6s linear infinite;
+    }
+
+    @keyframes spin {
+      0% { transform: rotateY(0deg); }
+      100% { transform: rotateY(360deg); }
+    }
+
+    .header-text h1 {
+      font-size: 2.5em;
+      color: var(--gold-light);
+      text-shadow: 0 4px 10px rgba(0, 0, 0, 0.5);
+      margin-bottom: 5px;
+      letter-spacing: 2px;
+    }
+
+    .header-text p {
+      color: var(--cream);
+      font-size: 1.1em;
+      opacity: 0.9;
+    }
+
+    nav {
+      background: rgba(0, 0, 0, 0.3);
+      padding: 15px 20px;
+      overflow-x: auto;
+      box-shadow: inset 0 -2px 10px rgba(0, 0, 0, 0.3);
+    }
+
+    .nav-container {
+      max-width: 1200px;
+      margin: 0 auto;
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    nav button {
+      background: var(--green-800);
+      color: var(--cream);
+      border: 2px solid var(--gold);
+      padding: 12px 24px;
+      border-radius: 25px;
+      cursor: pointer;
+      font-size: 1em;
+      font-weight: 600;
+      transition: all 0.3s ease;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+
+    nav button:hover {
+      background: var(--green-700);
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(212, 175, 55, 0.3);
+    }
+
+    nav button.active {
+      background: linear-gradient(135deg, var(--gold), var(--gold-light));
+      color: var(--green-950);
+      transform: scale(1.05);
+      box-shadow: 0 8px 25px rgba(212, 175, 55, 0.5);
+    }
+
+    main {
+      flex: 1;
+      max-width: 1200px;
+      width: 100%;
+      margin: 0 auto;
+      padding: 30px 20px;
+      animation: fadeIn 0.8s ease-out;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .card {
+      background: linear-gradient(135deg, rgba(255, 255, 255, 0.08), rgba(255, 255, 255, 0.02));
+      border: 2px solid rgba(212, 175, 55, 0.3);
+      border-radius: 15px;
+      padding: 25px;
+      margin-bottom: 25px;
+      backdrop-filter: blur(10px);
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+      transition: all 0.3s ease;
+    }
+
+    .card:hover {
+      border-color: rgba(212, 175, 55, 0.6);
+      box-shadow: 0 12px 40px rgba(212, 175, 55, 0.2);
+      transform: translateY(-2px);
+    }
+
+    .card h2 {
+      color: var(--gold-light);
+      font-size: 1.8em;
+      margin-bottom: 20px;
+      border-bottom: 2px solid var(--gold);
+      padding-bottom: 12px;
+      text-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
+    }
+
+    .card h3 {
+      color: var(--gold-light);
+      font-size: 1.3em;
+      margin: 20px 0 15px;
+    }
+
+    .groups-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 25px;
+    }
+
+    @media (max-width: 900px) {
+      .groups-grid { grid-template-columns: 1fr; }
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 15px;
+    }
+
+    thead { background: rgba(212, 175, 55, 0.1); }
+
+    th {
+      color: var(--gold);
+      padding: 12px;
+      text-align: left;
+      font-weight: 700;
+      text-transform: uppercase;
+      font-size: 0.9em;
+      border-bottom: 2px solid var(--gold);
+    }
+
+    td {
+      padding: 12px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    tr:hover { background: rgba(212, 175, 55, 0.05); }
+
+    .match-card {
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid rgba(212, 175, 55, 0.2);
+      border-radius: 10px;
+      padding: 15px;
+      margin: 12px 0;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 15px;
+      transition: all 0.3s ease;
+    }
+
+    .match-card:hover {
+      background: rgba(212, 175, 55, 0.1);
+      border-color: var(--gold);
+      transform: translateX(5px);
+    }
+
+    .match-teams {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      gap: 15px;
+      font-weight: 600;
+    }
+
+    .score {
+      background: var(--green-950);
+      border: 2px solid var(--gold);
+      color: var(--gold-light);
+      padding: 8px 16px;
+      border-radius: 8px;
+      font-size: 1.3em;
+      font-weight: 700;
+      min-width: 80px;
+      text-align: center;
+    }
+
+    .match-info {
+      text-align: right;
+      font-size: 0.9em;
+      opacity: 0.8;
+    }
+
+    .login-box {
+      max-width: 450px;
+      margin: 40px auto;
+      background: linear-gradient(135deg, rgba(255, 255, 255, 0.08), rgba(255, 255, 255, 0.02));
+      border: 2px solid rgba(212, 175, 55, 0.4);
+      border-radius: 15px;
+      padding: 40px;
+      backdrop-filter: blur(10px);
+    }
+
+    .login-box h2 {
+      color: var(--gold-light);
+      margin-bottom: 30px;
+      text-align: center;
+      font-size: 2em;
+    }
+
+    .form-group {
+      margin-bottom: 20px;
+    }
+
+    .form-group label {
+      display: block;
+      color: var(--gold-light);
+      margin-bottom: 8px;
+      font-weight: 600;
+    }
+
+    input, select {
+      width: 100%;
+      padding: 12px 15px;
+      background: var(--green-950);
+      border: 2px solid rgba(212, 175, 55, 0.4);
+      border-radius: 8px;
+      color: var(--cream);
+      font-size: 1em;
+      transition: all 0.3s ease;
+    }
+
+    input:focus, select:focus {
+      outline: none;
+      border-color: var(--gold);
+      box-shadow: 0 0 15px rgba(212, 175, 55, 0.3);
+    }
+
+    button.btn {
+      width: 100%;
+      padding: 14px;
+      background: linear-gradient(135deg, var(--gold), var(--gold-light));
+      color: var(--green-950);
+      border: none;
+      border-radius: 8px;
+      font-size: 1.1em;
+      font-weight: 700;
+      cursor: pointer;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      transition: all 0.3s ease;
+      box-shadow: 0 6px 20px rgba(212, 175, 55, 0.3);
+    }
+
+    button.btn:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 10px 30px rgba(212, 175, 55, 0.4);
+    }
+
+    .admin-section {
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid rgba(212, 175, 55, 0.2);
+      border-radius: 10px;
+      padding: 20px;
+      margin: 20px 0;
+    }
+
+    .admin-section h3 {
+      color: var(--gold-light);
+      margin-bottom: 15px;
+    }
+
+    .form-row {
+      display: flex;
+      gap: 15px;
+      margin-bottom: 15px;
+    }
+
+    .form-row input {
+      flex: 1;
+    }
+
+    button.btn-small {
+      padding: 10px 20px;
+      font-size: 0.9em;
+    }
+
+    .team-item {
+      background: rgba(212, 175, 55, 0.05);
+      border: 1px solid rgba(212, 175, 55, 0.2);
+      border-radius: 8px;
+      padding: 15px;
+      margin: 10px 0;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .scorers-list {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+      gap: 15px;
+    }
+
+    .scorer-card {
+      background: rgba(212, 175, 55, 0.1);
+      border-left: 4px solid var(--gold);
+      padding: 15px;
+      border-radius: 8px;
+      text-align: center;
+    }
+
+    .scorer-card .name {
+      color: var(--gold-light);
+      font-weight: 700;
+      font-size: 1.1em;
+    }
+
+    .scorer-card .goals {
+      color: var(--cream);
+      font-size: 1.8em;
+      font-weight: 700;
+      margin: 10px 0;
+    }
+
+    footer {
+      background: rgba(0, 0, 0, 0.3);
+      border-top: 2px solid var(--gold);
+      padding: 20px;
+      text-align: center;
+      color: var(--cream);
+      font-size: 0.9em;
+      opacity: 0.8;
+    }
+
+    .empty-hint {
+      color: var(--cream);
+      font-style: italic;
+      opacity: 0.7;
+      padding: 20px;
+      text-align: center;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="header-content">
+      <div class="logo-blason">🏆</div>
+      <div class="header-text">
+        <h1>TORNEIO DE SANTULHÃO 2026</h1>
+        <p>🇵🇹 Santulhão · Portugal</p>
+      </div>
+    </div>
+  </header>
+
+  <nav>
+    <div class="nav-container">
+      <button data-tab="standings" class="tab-btn active">📊 Classificação</button>
+      <button data-tab="calendar" class="tab-btn">📅 Calendário</button>
+      <button data-tab="bracket" class="tab-btn">🏅 Fase Final</button>
+      <button data-tab="scorers" class="tab-btn">⚽ Marcadores</button>
+      <button data-tab="admin" class="tab-btn">🔐 Admin</button>
+    </div>
+  </nav>
+
+  <main id="content"></main>
+
+  <footer>
+    <p>🏆 Torneio de Santulhão 2026 — Portugal's Premier Tournament</p>
+  </footer>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script>
+    let supabase, state = { session: null, teams: [], matches: [], tab: 'standings', loading: true };
+
+    async function init() {
+      let attempts = 0;
+      while (!window.supabase && attempts < 20) {
+        await new Promise(r => setTimeout(r, 100));
+        attempts++;
       }
-      * { box-sizing: border-box; }
-      body { margin: 0; font-family: "Segoe UI", Roboto, Arial, sans-serif; background: linear-gradient(180deg, var(--green-950), var(--green-900) 40%, var(--green-950)); color: var(--cream); min-height: 100vh; }
-      header.site-header { padding: 22px 16px 14px; text-align: center; border-bottom: 2px solid var(--gold); background: rgba(0, 0, 0, 0.15); }
-      header.site-header h1 { margin: 0; color: var(--gold-light); font-size: 1.7rem; letter-spacing: 0.5px; text-shadow: 0 2px 6px rgba(0, 0, 0, 0.4); }
-      header.site-header p { margin: 4px 0 0; color: var(--cream); opacity: 0.8; font-size: 0.9rem; }
-      nav.tabs { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; padding: 14px 10px; }
-      nav.tabs button { background: var(--green-800); color: var(--cream); border: 1px solid var(--gold); padding: 8px 16px; border-radius: 999px; cursor: pointer; font-size: 0.9rem; transition: 0.15s; }
-      nav.tabs button:hover { background: var(--green-700); }
-      nav.tabs button.active { background: var(--gold); color: var(--green-950); font-weight: 700; border-color: var(--gold-light); }
-      main { max-width: 980px; margin: 0 auto; padding: 10px 14px 60px; }
-      .card { background: rgba(255, 255, 255, 0.04); border: 1px solid rgba(212, 175, 55, 0.35); border-radius: var(--radius); padding: 16px; margin-bottom: 18px; }
-      .card h2 { margin-top: 0; color: var(--gold-light); font-size: 1.15rem; border-bottom: 1px solid rgba(212, 175, 55, 0.3); padding-bottom: 8px; }
-      .card h3 { color: var(--gold-light); margin: 12px 0 8px; }
-      .groups-grid { display: grid; grid-template-columns: 1fr; gap: 16px; }
-      @media (min-width: 720px) { .groups-grid { grid-template-columns: 1fr 1fr; } }
-      table { width: 100%; border-collapse: collapse; font-size: 0.88rem; }
-      th, td { padding: 6px 6px; text-align: center; border-bottom: 1px solid rgba(255, 255, 255, 0.08); }
-      th { color: var(--gold-light); font-weight: 600; font-size: 0.78rem; text-transform: uppercase; }
-      td:first-child, th:first-child { text-align: left; }
-      tr.rank-1 td:first-child, tr.rank-2 td:first-child { color: var(--gold-light); font-weight: 700; }
-      .match-row { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 10px 8px; border-bottom: 1px solid rgba(255, 255, 255, 0.08); flex-wrap: wrap; }
-      .match-row:last-child { border-bottom: none; }
-      .match-teams { display: flex; align-items: center; gap: 10px; flex: 1; min-width: 220px; }
-      .match-teams .team { flex: 1; font-weight: 600; }
-      .match-teams .team.right { text-align: right; }
-      .score-badge { background: var(--green-950); border: 1px solid var(--gold); color: var(--gold-light); font-weight: 700; padding: 4px 10px; border-radius: 6px; min-width: 56px; text-align: center; }
-      .match-meta { font-size: 0.78rem; opacity: 0.75; min-width: 150px; text-align: right; }
-      .scorers-line { width: 100%; font-size: 0.78rem; opacity: 0.85; padding-left: 4px; color: var(--gold-light); }
-      .bracket { display: flex; flex-direction: column; gap: 22px; }
-      .bracket-round h3 { color: var(--gold-light); font-size: 0.95rem; margin: 0 0 8px; }
-      .bracket-matches { display: grid; gap: 12px; grid-template-columns: 1fr; }
-      @media (min-width: 720px) { .bracket-matches.two-col { grid-template-columns: 1fr 1fr; } }
-      .scorers-table td:first-child { font-weight: 600; }
-      .scorers-table .rank { color: var(--gold-light); font-weight: 700; }
-      button.btn { background: var(--gold); color: var(--green-950); border: none; padding: 8px 14px; border-radius: 6px; font-weight: 700; cursor: pointer; }
-      button.btn:hover { background: var(--gold-light); }
-      button.btn.secondary { background: transparent; color: var(--gold-light); border: 1px solid var(--gold); }
-      button.btn.danger { background: var(--red); color: var(--cream); }
-      input, select { background: var(--green-950); border: 1px solid rgba(212, 175, 55, 0.5); color: var(--cream); padding: 7px 9px; border-radius: 6px; font-size: 0.9rem; }
-      form.inline-form { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; margin-bottom: 12px; }
-      .admin-team-block { border: 1px solid rgba(212, 175, 55, 0.3); border-radius: 8px; padding: 10px; margin-bottom: 12px; }
-      .admin-team-block h3 { margin: 0 0 8px; color: var(--gold-light); display: flex; justify-content: space-between; align-items: center; }
-      .player-chip { display: inline-flex; align-items: center; gap: 6px; background: var(--green-800); border: 1px solid rgba(212, 175, 55, 0.4); padding: 3px 8px; border-radius: 999px; font-size: 0.8rem; margin: 3px 4px 3px 0; }
-      .player-chip button { background: none; border: none; color: var(--red); cursor: pointer; font-weight: 700; padding: 0; }
-      .login-box { max-width: 340px; margin: 40px auto; }
-      .login-box input { width: 100%; margin-bottom: 10px; }
-      .error-msg { color: #ff8f7a; font-size: 0.85rem; margin-top: 6px; }
-      .result-form { display: grid; gap: 8px; margin-top: 10px; padding-top: 10px; border-top: 1px dashed rgba(212, 175, 55, 0.3); }
-      .result-form .score-inputs { display: flex; align-items: center; gap: 8px; }
-      .result-form .score-inputs input { width: 56px; text-align: center; }
-      .goal-row { display: flex; gap: 6px; align-items: center; flex-wrap: wrap; }
-      footer { text-align: center; opacity: 0.6; font-size: 0.78rem; padding: 20px; }
-      .badge-live { display: inline-block; background: var(--gold); color: var(--green-950); font-size: 0.65rem; font-weight: 700; padding: 2px 6px; border-radius: 4px; margin-left: 6px; }
-      .empty-hint { opacity: 0.7; font-style: italic; font-size: 0.9rem; }
-    </style>
-  </head>
-  <body>
-    <div id="app"></div>
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <script>
-      async function init() {
-        // Attendre que Supabase soit disponible
-        let attempts = 0;
-        while (!window.supabase && attempts < 20) {
-          await new Promise(r => setTimeout(r, 100));
-          attempts++;
-        }
 
-        if (!window.supabase) {
-          document.body.innerHTML = '<div style="color:red;padding:20px;font-family:monospace;">Erreur: Supabase ne s\'a pas chargé.<br>Status: ' + (window.supabase ? 'OK' : 'FAIL') + '<br><button onclick="location.reload()">Rafraîchir</button></div>';
-          return;
-        }
+      if (!window.supabase) {
+        document.getElementById('content').innerHTML = '<div class="card"><p class="empty-hint">⚠ Erro ao carregar. Recarregue a página.</p></div>';
+        return;
+      }
 
-        const supabase = window.supabase.createClient(
-          'https://bwseriegvtvjidbacwsa.supabase.co',
-          'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJ3c2VyaWVndnR2amlkYmFjd3NhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODU2NzQwOTEsImV4cCI6MjEwMTI1MDA5MX0.fiddoMRn4I0E8gXwd6FMsa25xBW4i-_w5MmTfyCw6Ac'
-        );
+      supabase = window.supabase.createClient(
+        'https://bwseriegvtvjidbacwsa.supabase.co',
+        'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJ3c2VyaWVndnR2amlkYmFjd3NhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODU2NzQwOTEsImV4cCI6MjEwMTI1MDA5MX0.fiddoMRn4I0E8gXwd6FMsa25xBW4i-_w5MmTfyCw6Ac'
+      );
 
-        const app = document.getElementById('app');
-        const state = { session: null, teams: [], matches: [], tab: 'standings', loading: true };
+      const session = await supabase.auth.getSession();
+      state.session = session.data.session;
 
-        function escapeHtml(str) {
-          return String(str).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]);
-        }
-
-        function teamLabel(team) {
-          return team ? escapeHtml(team.name) : 'Por definir';
-        }
-
-        function formatDateTime(iso) {
-          if (!iso) return 'Data por marcar';
-          const d = new Date(iso);
-          return d.toLocaleString('pt-PT', { weekday: 'short', day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' });
-        }
-
-        function computeStandings(teams, matches, groupName) {
-          const groupTeams = teams.filter(t => t.group_name === groupName);
-          const table = {};
-          for (const t of groupTeams) {
-            table[t.id] = { team: t, pj: 0, v: 0, e: 0, d: 0, gm: 0, gs: 0, gd: 0, pts: 0 };
-          }
-          const groupMatches = matches.filter(m => m.stage === 'group' && m.group_name === groupName && m.played);
-          for (const m of groupMatches) {
-            const r1 = table[m.team1_id], r2 = table[m.team2_id];
-            if (!r1 || !r2) continue;
-            r1.pj++; r2.pj++;
-            r1.gm += m.score1; r1.gs += m.score2;
-            r2.gm += m.score2; r2.gs += m.score1;
-            if (m.score1 > m.score2) { r1.v++; r1.pts += 3; r2.d++; }
-            else if (m.score1 < m.score2) { r2.v++; r2.pts += 3; r1.d++; }
-            else { r1.e++; r2.e++; r1.pts += 1; r2.pts += 1; }
-          }
-          const rows = Object.values(table);
-          rows.forEach(r => r.gd = r.gm - r.gs);
-          rows.sort((a, b) => b.pts - a.pts || b.gd - a.gd || b.gm - a.gm || a.team.name.localeCompare(b.team.name));
-          return rows;
-        }
-
-        function computeTopScorers(matches) {
-          const counts = {};
-          for (const m of matches) {
-            for (const g of (m.goals || [])) {
-              if (!g.player_id || !g.players) continue;
-              if (!counts[g.player_id]) counts[g.player_id] = { player: g.players, teamId: g.team_id, goals: 0 };
-              counts[g.player_id].goals++;
-            }
-          }
-          return Object.values(counts).sort((a, b) => b.goals - a.goals || a.player.name.localeCompare(b.player.name));
-        }
-
-        function standingsTable(rows, groupName) {
-          if (rows.length === 0) return `<p class="empty-hint">Ainda sem equipas no Grupo ${groupName}.</p>`;
-          const trs = rows.map((r, i) => `<tr class="${i === 0 ? 'rank-1' : i === 1 ? 'rank-2' : ''}"><td>${escapeHtml(r.team.name)}</td><td>${r.pj}</td><td>${r.v}</td><td>${r.e}</td><td>${r.d}</td><td>${r.gm}</td><td>${r.gs}</td><td>${r.gd}</td><td><strong>${r.pts}</strong></td></tr>`).join('');
-          return `<table><thead><tr><th>Equipa</th><th>J</th><th>V</th><th>E</th><th>D</th><th>GM</th><th>GS</th><th>DG</th><th>Pts</th></tr></thead><tbody>${trs}</tbody></table>`;
-        }
-
-        function renderStandings(teams, matches) {
-          const standingsA = computeStandings(teams, matches, 'A');
-          const standingsB = computeStandings(teams, matches, 'B');
-          return `<div class="card"><h2>Classificação</h2><div class="groups-grid"><div><h3>Grupo A</h3>${standingsTable(standingsA, 'A')}</div><div><h3>Grupo B</h3>${standingsTable(standingsB, 'B')}</div></div><p class="empty-hint" style="margin-top:10px;">O 1º de cada grupo defronta o 2º do grupo adversário nas meias-finais.</p></div>`;
-        }
-
-        function matchRow(m) {
-          const scoreHtml = m.played ? `<span class="score-badge">${m.score1} - ${m.score2}</span>` : `<span class="score-badge">vs</span>`;
-          const scorers = (m.goals || []).map(g => g.players ? g.players.name : null).filter(Boolean);
-          const scorersLine = scorers.length ? `<div class="scorers-line">⚽ ${scorers.map(escapeHtml).join(', ')}</div>` : '';
-          return `<div class="match-row"><div class="match-teams"><span class="team">${teamLabel(m.team1)}</span>${scoreHtml}<span class="team right">${teamLabel(m.team2)}</span></div><div class="match-meta">${formatDateTime(m.scheduled_at)}${m.venue ? ' · ' + escapeHtml(m.venue) : ''}</div>${scorersLine}</div>`;
-        }
-
-        function renderCalendar(matches) {
-          const groupA = matches.filter(m => m.stage === 'group' && m.group_name === 'A');
-          const groupB = matches.filter(m => m.stage === 'group' && m.group_name === 'B');
-          return `${groupA.length ? `<div class="card"><h2>Grupo A — Calendário</h2>${groupA.map(matchRow).join('')}</div>` : `<div class="card"><h2>Grupo A — Calendário</h2><p class="empty-hint">Calendário gerado assim que o grupo tiver 4 equipas.</p></div>`}${groupB.length ? `<div class="card"><h2>Grupo B — Calendário</h2>${groupB.map(matchRow).join('')}</div>` : `<div class="card"><h2>Grupo B — Calendário</h2><p class="empty-hint">Calendário gerado assim que o grupo tiver 4 equipas.</p></div>`}`;
-        }
-
-        function renderBracket(matches) {
-          const semi1 = matches.find(m => m.stage === 'semi' && m.semi_slot === 'semi1');
-          const semi2 = matches.find(m => m.stage === 'semi' && m.semi_slot === 'semi2');
-          const final = matches.find(m => m.stage === 'final');
-          const third = matches.find(m => m.stage === 'third_place');
-          const box = (m, label) => m ? `<div class="card">${matchRow(m)}</div>` : `<div class="card"><p class="empty-hint">${label}</p></div>`;
-          return `<div class="card"><h2>Fase Final</h2><div class="bracket"><div class="bracket-round"><h3>Meias-Finais</h3><div class="bracket-matches two-col">${box(semi1, '1º Grupo A vs 2º Grupo B — a definir')}${box(semi2, '1º Grupo B vs 2º Grupo A — a definir')}</div></div><div class="bracket-round"><h3>3º Lugar &amp; Final</h3><div class="bracket-matches two-col">${box(third, 'Vencidos das meias-finais — a definir')}${box(final, 'Vencedores das meias-finais — a definir')}</div></div></div></div>`;
-        }
-
-        function renderScorers(matches) {
-          const scorers = computeTopScorers(matches);
-          if (scorers.length === 0) return `<div class="card"><h2>Melhores Marcadores</h2><p class="empty-hint">Ainda não há golos registados.</p></div>`;
-          const trs = scorers.map((s, i) => `<tr><td class="rank">${i + 1}º</td><td>${escapeHtml(s.player.name)}</td><td><strong>${s.goals}</strong></td></tr>`).join('');
-          return `<div class="card"><h2>Melhores Marcadores</h2><table class="scorers-table"><thead><tr><th></th><th>Jogador</th><th>Golos</th></tr></thead><tbody>${trs}</tbody></table></div>`;
-        }
-
-        function renderLogin(errorMsg) {
-          return `<div class="card login-box"><h2>Área de Administração</h2><form data-action="login-form"><input type="email" id="login-email" placeholder="Email" required autocomplete="username" /><input type="password" id="login-password" placeholder="Palavra-passe" required autocomplete="current-password" /><button class="btn" type="submit" style="width:100%;">Entrar</button>${errorMsg ? `<p class="error-msg">${escapeHtml(errorMsg)}</p>` : ''}</form></div>`;
-        }
-
-        function renderNav() {
-          const tabs = state.session
-            ? [{ id: 'standings', label: 'Classificação' }, { id: 'calendar', label: 'Calendário' }, { id: 'bracket', label: 'Fase Final' }, { id: 'scorers', label: 'Marcadores' }, { id: 'admin-teams', label: 'Equipas' }, { id: 'admin-schedule', label: 'Horários' }, { id: 'admin-results', label: 'Resultados' }]
-            : [{ id: 'standings', label: 'Classificação' }, { id: 'calendar', label: 'Calendário' }, { id: 'bracket', label: 'Fase Final' }, { id: 'scorers', label: 'Marcadores' }];
-          const buttons = tabs.map(t => `<button data-action="tab" data-tab="${t.id}" class="${state.tab === t.id ? 'active' : ''}">${t.label}</button>`).join('');
-          const authButton = state.session ? `<button data-action="logout">Sair</button>` : `<button data-action="tab" data-tab="login" class="${state.tab === 'login' ? 'active' : ''}">Admin</button>`;
-          return `<nav class="tabs">${buttons}${authButton}</nav>`;
-        }
-
-        function renderContent() {
-          if (state.loading) return `<div class="card"><p class="empty-hint">A carregar...</p></div>`;
-          switch (state.tab) {
-            case 'standings': return renderStandings(state.teams, state.matches);
-            case 'calendar': return renderCalendar(state.matches);
-            case 'bracket': return renderBracket(state.matches);
-            case 'scorers': return renderScorers(state.matches);
-            case 'login': return state.session ? renderStandings(state.teams, state.matches) : renderLogin(state.loginError || '');
-            default: return renderStandings(state.teams, state.matches);
-          }
-        }
-
-        function render() {
-          app.innerHTML = `
-            <header class="site-header">
-              <h1>🏆 Torneio de Santulhão 2026</h1>
-              <p>Santulhão · Portugal</p>
-            </header>
-            ${renderNav()}
-            <main>${renderContent()}</main>
-            <footer>Torneio de Santulhão 2026</footer>
-          `;
-        }
-
-        async function loadData() {
-          try {
-            const [teams, matches] = await Promise.all([
-              supabase.from('teams').select('*, players(*)').order('group_name').order('name'),
-              supabase.from('matches').select('*, team1:team1_id(id,name,group_name), team2:team2_id(id,name,group_name), goals(id, player_id, team_id, players(id,name))').order('stage').order('scheduled_at', { ascending: true, nullsFirst: false })
-            ]);
-            state.teams = teams.data || [];
-            state.matches = matches.data || [];
-          } catch (err) {
-            console.error('Erro ao carregar dados:', err);
-          }
-        }
-
-        app.addEventListener('click', async (e) => {
-          const el = e.target.closest('[data-action]');
-          if (!el) return;
-          const action = el.dataset.action;
-          if (action === 'tab') {
-            state.tab = el.dataset.tab;
-            render();
-          } else if (action === 'logout') {
-            await supabase.auth.signOut();
-            state.session = null;
-            state.tab = 'standings';
-            render();
-          }
-        });
-
-        app.addEventListener('submit', async (e) => {
-          const form = e.target.closest('[data-action]');
-          if (!form) return;
-          e.preventDefault();
-          if (form.dataset.action === 'login-form') {
-            const email = form.querySelector('#login-email').value.trim();
-            const password = form.querySelector('#login-password').value;
-            try {
-              await supabase.auth.signInWithPassword({ email, password });
-              state.session = await supabase.auth.getSession();
-              state.session = state.session.data.session;
-              state.loginError = null;
-              state.tab = 'standings';
-              await loadData();
-              render();
-            } catch (err) {
-              state.loginError = 'Credenciais inválidas.';
-              render();
-            }
-          }
-        });
-
-        await loadData();
-        state.loading = false;
+      supabase.auth.onAuthStateChange((_evt, sess) => {
+        state.session = sess;
         render();
+      });
 
-        supabase.channel('public-changes')
-          .on('postgres_changes', { event: '*', schema: 'public', table: 'teams' }, () => loadData().then(render))
-          .on('postgres_changes', { event: '*', schema: 'public', table: 'matches' }, () => loadData().then(render))
-          .on('postgres_changes', { event: '*', schema: 'public', table: 'goals' }, () => loadData().then(render))
-          .subscribe();
+      await loadData();
+      state.loading = false;
+      render();
+
+      document.querySelectorAll('.tab-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+          document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+          btn.classList.add('active');
+          state.tab = btn.dataset.tab;
+          render();
+        });
+      });
+
+      supabase.channel('changes')
+        .on('postgres_changes', { event: '*', schema: 'public' }, () => loadData().then(render))
+        .subscribe();
+    }
+
+    async function loadData() {
+      const [teams, matches] = await Promise.all([
+        supabase.from('teams').select('*, players(*)').order('group_name').order('name'),
+        supabase.from('matches').select('*, team1:team1_id(id,name,group_name), team2:team2_id(id,name,group_name), goals(id, player_id, team_id, players(id,name))').order('stage').order('scheduled_at', { ascending: true, nullsFirst: false })
+      ]);
+      state.teams = teams.data || [];
+      state.matches = matches.data || [];
+    }
+
+    function escape(str) {
+      return String(str).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]);
+    }
+
+    function computeStandings(teams, matches, group) {
+      const gt = teams.filter(t => t.group_name === group);
+      const table = {};
+      gt.forEach(t => table[t.id] = { team: t, pj: 0, v: 0, e: 0, d: 0, gm: 0, gs: 0, pts: 0 });
+      matches.filter(m => m.stage === 'group' && m.group_name === group && m.played).forEach(m => {
+        const r1 = table[m.team1_id], r2 = table[m.team2_id];
+        if (!r1 || !r2) return;
+        r1.pj++; r2.pj++;
+        r1.gm += m.score1; r1.gs += m.score2;
+        r2.gm += m.score2; r2.gs += m.score1;
+        if (m.score1 > m.score2) { r1.v++; r1.pts += 3; r2.d++; }
+        else if (m.score1 < m.score2) { r2.v++; r2.pts += 3; r1.d++; }
+        else { r1.e++; r2.e++; r1.pts++; r2.pts++; }
+      });
+      const rows = Object.values(table);
+      rows.forEach(r => r.gd = r.gm - r.gs);
+      rows.sort((a, b) => b.pts - a.pts || b.gd - a.gd || b.gm - a.gm);
+      return rows;
+    }
+
+    function renderStandings() {
+      const sa = computeStandings(state.teams, state.matches, 'A');
+      const sb = computeStandings(state.teams, state.matches, 'B');
+      let html = '<div class="card"><h2>📊 Classificação dos Grupos</h2><div class="groups-grid">';
+
+      html += '<div><h3>Grupo A</h3>' + (sa.length ? '<table><thead><tr><th>Equipa</th><th>J</th><th>V</th><th>E</th><th>D</th><th>GM</th><th>GS</th><th>DG</th><th>Pts</th></tr></thead><tbody>' +
+        sa.map((r, i) => `<tr><td>${escape(r.team.name)}</td><td>${r.pj}</td><td>${r.v}</td><td>${r.e}</td><td>${r.d}</td><td>${r.gm}</td><td>${r.gs}</td><td>${r.gd}</td><td><strong>${r.pts}</strong></td></tr>`).join('') +
+        '</tbody></table>' : '<p class="empty-hint">Aguardando equipas...</p>') + '</div>';
+
+      html += '<div><h3>Grupo B</h3>' + (sb.length ? '<table><thead><tr><th>Equipa</th><th>J</th><th>V</th><th>E</th><th>D</th><th>GM</th><th>GS</th><th>DG</th><th>Pts</th></tr></thead><tbody>' +
+        sb.map((r, i) => `<tr><td>${escape(r.team.name)}</td><td>${r.pj}</td><td>${r.v}</td><td>${r.e}</td><td>${r.d}</td><td>${r.gm}</td><td>${r.gs}</td><td>${r.gd}</td><td><strong>${r.pts}</strong></td></tr>`).join('') +
+        '</tbody></table>' : '<p class="empty-hint">Aguardando equipas...</p>') + '</div>';
+
+      html += '</div></div>';
+      return html;
+    }
+
+    function renderCalendar() {
+      const ga = state.matches.filter(m => m.stage === 'group' && m.group_name === 'A');
+      const gb = state.matches.filter(m => m.stage === 'group' && m.group_name === 'B');
+      let html = '';
+
+      if (ga.length) {
+        html += '<div class="card"><h2>📅 Grupo A — Calendário</h2>';
+        ga.forEach(m => {
+          html += `<div class="match-card">
+            <div class="match-teams">
+              <span>${escape(m.team1?.name || 'TBD')}</span>
+              <div class="score">${m.played ? m.score1 + '-' + m.score2 : 'vs'}</div>
+              <span>${escape(m.team2?.name || 'TBD')}</span>
+            </div>
+            <div class="match-info">${m.scheduled_at ? new Date(m.scheduled_at).toLocaleString('pt-PT') : 'Data TBD'}</div>
+          </div>`;
+        });
+        html += '</div>';
       }
-      init();
-    </script>
-  </body>
+
+      if (gb.length) {
+        html += '<div class="card"><h2>📅 Grupo B — Calendário</h2>';
+        gb.forEach(m => {
+          html += `<div class="match-card">
+            <div class="match-teams">
+              <span>${escape(m.team1?.name || 'TBD')}</span>
+              <div class="score">${m.played ? m.score1 + '-' + m.score2 : 'vs'}</div>
+              <span>${escape(m.team2?.name || 'TBD')}</span>
+            </div>
+            <div class="match-info">${m.scheduled_at ? new Date(m.scheduled_at).toLocaleString('pt-PT') : 'Data TBD'}</div>
+          </div>`;
+        });
+        html += '</div>';
+      }
+
+      return html || '<div class="card"><p class="empty-hint">Calendário em breve...</p></div>';
+    }
+
+    function renderBracket() {
+      const semi1 = state.matches.find(m => m.stage === 'semi' && m.semi_slot === 'semi1');
+      const semi2 = state.matches.find(m => m.stage === 'semi' && m.semi_slot === 'semi2');
+      const final = state.matches.find(m => m.stage === 'final');
+      const third = state.matches.find(m => m.stage === 'third_place');
+
+      let html = '<div class="card"><h2>🏅 Fase Final</h2>';
+      html += '<div class="groups-grid">';
+
+      html += '<div><h3>Meias-Finais</h3>';
+      if (semi1) {
+        html += `<div class="match-card">
+          <div class="match-teams">
+            <span>${escape(semi1.team1?.name || 'TBD')}</span>
+            <div class="score">${semi1.played ? semi1.score1 + '-' + semi1.score2 : 'vs'}</div>
+            <span>${escape(semi1.team2?.name || 'TBD')}</span>
+          </div>
+        </div>`;
+      }
+      if (semi2) {
+        html += `<div class="match-card">
+          <div class="match-teams">
+            <span>${escape(semi2.team1?.name || 'TBD')}</span>
+            <div class="score">${semi2.played ? semi2.score1 + '-' + semi2.score2 : 'vs'}</div>
+            <span>${escape(semi2.team2?.name || 'TBD')}</span>
+          </div>
+        </div>`;
+      }
+      html += '</div>';
+
+      html += '<div><h3>Final & 3º Lugar</h3>';
+      if (final) {
+        html += `<div class="match-card">
+          <div class="match-teams">
+            <span>${escape(final.team1?.name || 'TBD')}</span>
+            <div class="score">${final.played ? final.score1 + '-' + final.score2 : 'vs'}</div>
+            <span>${escape(final.team2?.name || 'TBD')}</span>
+          </div>
+        </div>`;
+      }
+      if (third) {
+        html += `<div class="match-card">
+          <div class="match-teams">
+            <span>${escape(third.team1?.name || 'TBD')}</span>
+            <div class="score">${third.played ? third.score1 + '-' + third.score2 : 'vs'}</div>
+            <span>${escape(third.team2?.name || 'TBD')}</span>
+          </div>
+        </div>`;
+      }
+      html += '</div></div></div>';
+
+      return html;
+    }
+
+    function renderScorers() {
+      const counts = {};
+      state.matches.forEach(m => {
+        (m.goals || []).forEach(g => {
+          if (!g.player_id || !g.players) return;
+          if (!counts[g.player_id]) counts[g.player_id] = { player: g.players, goals: 0 };
+          counts[g.player_id].goals++;
+        });
+      });
+      const scorers = Object.values(counts).sort((a, b) => b.goals - a.goals);
+
+      let html = '<div class="card"><h2>⚽ Melhores Marcadores</h2>';
+      if (scorers.length) {
+        html += '<div class="scorers-list">';
+        scorers.forEach((s, i) => {
+          html += `<div class="scorer-card"><div class="name">${i + 1}. ${escape(s.player.name)}</div><div class="goals">${s.goals}</div></div>`;
+        });
+        html += '</div>';
+      } else {
+        html += '<p class="empty-hint">Sem golos registados ainda...</p>';
+      }
+      html += '</div>';
+      return html;
+    }
+
+    async function renderAdmin() {
+      if (!state.session) {
+        let html = '<div class="login-box"><h2>Admin</h2><div class="form-group"><label>Senha:</label><input type="password" id="admin-pwd" placeholder="Insira a senha" /></div><button class="btn" onclick="adminLogin()">Entrar</button></div>';
+        document.getElementById('content').innerHTML = html;
+        return;
+      }
+
+      let html = '<div class="card"><h2>⚙️ Painel Admin</h2>';
+      html += '<button class="btn btn-small" onclick="adminLogout()" style="width: auto; margin-bottom: 20px;">Sair</button>';
+
+      html += '<div class="admin-section"><h3>Adicionar Equipa</h3><div class="form-row"><input type="text" id="team-name" placeholder="Nome da equipa" /><select id="team-group"><option value="A">Grupo A</option><option value="B">Grupo B</option></select><button class="btn btn-small" onclick="addTeam()">Adicionar</button></div></div>';
+
+      html += '<div class="admin-section"><h3>Equipas Registadas</h3>';
+      state.teams.forEach(t => {
+        html += `<div class="team-item"><div><strong>${escape(t.name)}</strong> (Grupo ${t.group_name})<br><small>${(t.players || []).map(p => escape(p.name)).join(', ')}</small></div><button class="btn btn-small" onclick="deleteTeam('${t.id}')" style="width: auto;">Remover</button></div>`;
+      });
+      html += '</div>';
+
+      html += '<div class="admin-section"><h3>Adicionar Jogador a Equipa</h3><select id="team-sel"><option value="">Selecionar equipa</option>';
+      state.teams.forEach(t => html += `<option value="${t.id}">${escape(t.name)}</option>`);
+      html += '</select><input type="text" id="player-name" placeholder="Nome do jogador" style="margin-top: 10px;" /><button class="btn btn-small" onclick="addPlayer()" style="margin-top: 10px;">Adicionar</button></div>';
+
+      html += '<div class="admin-section"><h3>Resultados</h3>';
+      state.matches.forEach(m => {
+        html += `<div class="team-item" style="flex-direction: column; align-items: flex-start;">
+          <strong>${escape(m.team1?.name || 'TBD')} vs ${escape(m.team2?.name || 'TBD')}</strong>
+          <div style="width: 100%; margin-top: 10px;"><input type="number" min="0" id="score1-${m.id}" value="${m.score1 || ''}" placeholder="Golos 1" style="width: 48%;" /><input type="number" min="0" id="score2-${m.id}" value="${m.score2 || ''}" placeholder="Golos 2" style="width: 48%; margin-left: 4%;" /><button class="btn btn-small" onclick="saveResult('${m.id}')" style="width: 100%; margin-top: 10px;">Guardar</button></div>
+        </div>`;
+      });
+      html += '</div></div>';
+
+      document.getElementById('content').innerHTML = html;
+    }
+
+    function render() {
+      if (state.loading) {
+        document.getElementById('content').innerHTML = '<div class="card"><p class="empty-hint">⏳ A carregar...</p></div>';
+        return;
+      }
+
+      let html = '';
+      switch(state.tab) {
+        case 'standings': html = renderStandings(); break;
+        case 'calendar': html = renderCalendar(); break;
+        case 'bracket': html = renderBracket(); break;
+        case 'scorers': html = renderScorers(); break;
+        case 'admin': renderAdmin(); return;
+      }
+      document.getElementById('content').innerHTML = html;
+    }
+
+    async function adminLogin() {
+      const pwd = document.getElementById('admin-pwd').value;
+      if (pwd !== 'Santulhao.7') {
+        alert('Senha incorreta');
+        return;
+      }
+      await supabase.auth.signInWithPassword({ email: 'enzosantulhao7@gmail.com', password: 'Santulhao2026!Ouro' });
+    }
+
+    async function adminLogout() {
+      await supabase.auth.signOut();
+    }
+
+    async function addTeam() {
+      const name = document.getElementById('team-name').value;
+      const group = document.getElementById('team-group').value;
+      if (!name) return alert('Nome obrigatório');
+      await supabase.from('teams').insert({ name, group_name: group });
+      document.getElementById('team-name').value = '';
+      await loadData();
+      render();
+    }
+
+    async function deleteTeam(id) {
+      if (!confirm('Tem a certeza?')) return;
+      await supabase.from('teams').delete().eq('id', id);
+      await loadData();
+      render();
+    }
+
+    async function addPlayer() {
+      const teamId = document.getElementById('team-sel').value;
+      const name = document.getElementById('player-name').value;
+      if (!teamId || !name) return alert('Todos os campos obrigatórios');
+      await supabase.from('players').insert({ team_id: teamId, name });
+      document.getElementById('player-name').value = '';
+      await loadData();
+      render();
+    }
+
+    async function saveResult(matchId) {
+      const score1 = parseInt(document.getElementById(`score1-${matchId}`).value);
+      const score2 = parseInt(document.getElementById(`score2-${matchId}`).value);
+      if (isNaN(score1) || isNaN(score2)) return alert('Scores inválidos');
+      await supabase.from('matches').update({ score1, score2, played: true }).eq('id', matchId);
+      await loadData();
+      render();
+    }
+
+    window.adminLogin = adminLogin;
+    window.adminLogout = adminLogout;
+    window.addTeam = addTeam;
+    window.deleteTeam = deleteTeam;
+    window.addPlayer = addPlayer;
+    window.saveResult = saveResult;
+
+    init();
+  </script>
+</body>
 </html>
