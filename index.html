@@ -1019,7 +1019,7 @@
     // Also force a fetch to verify we have latest HTML
     fetch(window.location.href, { cache: 'no-store' }).catch(() => {})
 
-    let db, state = { session: null, teams: [], matches: [], tab: 'calendar', loading: true };
+    let db, state = { session: null, teams: [], matches: [], tab: 'calendar', loading: true, selectedMatchForGoals: null };
     // Force calendar as default tab
     const DEFAULT_TAB = 'calendar';
     const ADMIN_PASSWORD = 'Santulhao.7';
@@ -1509,6 +1509,9 @@
     }
 
     function selectMatchForGoals(matchId) {
+      // Store selected match for recovery after reload
+      state.selectedMatchForGoals = matchId;
+
       const match = state.matches.find(m => m.id === matchId);
       if (!match || !match.team1_id || !match.team2_id) return;
 
@@ -1585,14 +1588,20 @@
 
     async function addGoal(matchId, playerId, teamId) {
       await db.from('goals').insert({ match_id: matchId, player_id: playerId, team_id: teamId });
-      await loadData();
-      // Keep panel open - don't do full renderAdmin
+      // Don't do full loadData - just get goals for this match
+      const { data: goals } = await db.from('goals').select('*').eq('match_id', matchId);
+      const match = state.matches.find(m => m.id === matchId);
+      if (match) match.goals = goals || [];
+      // Restore panel
       selectMatchForGoals(matchId);
     }
 
     async function removeGoal(goalId, matchId) {
       await db.from('goals').delete().eq('id', goalId);
-      await loadData();
+      // Just get updated goals for this match
+      const { data: goals } = await db.from('goals').select('*').eq('match_id', matchId);
+      const match = state.matches.find(m => m.id === matchId);
+      if (match) match.goals = goals || [];
       // Keep panel open
       selectMatchForGoals(matchId);
     }
