@@ -1385,9 +1385,9 @@
       }
 
       html += `</div>`;
-      html += `<div id="goals-panel" style="display: none;" class="admin-section"><h3>Registar Golos</h3><div id="goals-content"></div></div>`;
+      html += `<div id="goals-panel" style="display: none;" class="admin-section"><h3>⚽ Registar Golos</h3><div id="goals-content"></div></div>`;
 
-      html += `<div class="admin-section"><h3>Calendário de Grupos</h3>
+      html += `<div id="schedules-section" class="admin-section"><h3>Calendário de Grupos</h3>
         <p class="empty-hint" style="margin-bottom: 12px;">Os jogos da fase de grupos (todos contra todos) e da fase final são criados automaticamente. Defina apenas a hora de cada jogo em baixo.</p>
         <button class="btn-small" onclick="generateGroupFixtures()">Atualizar Jogos de Grupo</button>
       </div>`;
@@ -1503,6 +1503,11 @@
       const match = state.matches.find(m => m.id === matchId);
       if (!match || !match.team1_id || !match.team2_id) return;
 
+      // Hide schedules section, show goals panel
+      const schedulesSection = document.getElementById('schedules-section');
+      if (schedulesSection) schedulesSection.style.display = 'none';
+      document.getElementById('goals-panel').style.display = 'block';
+
       const team1 = state.teams.find(t => t.id === match.team1_id);
       const team2 = state.teams.find(t => t.id === match.team2_id);
       const currentGoals = state.matches.find(m => m.id === matchId)?.goals || [];
@@ -1548,25 +1553,30 @@
       html += `</div>`;
 
       html += `</div>`;
-      html += `<div style="margin-top: 16px;"><button class="btn-small" style="width: 100%;" onclick="finishMatch('${matchId}', ${score1}, ${score2})">✅ Finalizar Jogo</button></div>`;
-      html += `<div style="margin-top: 8px;"><button class="btn-small" style="width: 100%; background: linear-gradient(135deg, #d4af37, #f5dd8f); color: var(--green-950);" onclick="renderAdmin()">← Voltar</button></div>`;
+      html += `<div style="margin-top: 16px;"><button class="btn-small" style="width: 100%;" onclick="finishMatch('${matchId}', ${score1}, ${score2})">✅ Finalizar Jogo (${score1}-${score2})</button></div>`;
+      html += `<div style="margin-top: 8px;"><button class="btn-small" style="width: 100%; background: linear-gradient(135deg, #d4af37, #f5dd8f); color: var(--green-950);" onclick="closeGoalsPanel()">← Voltar</button></div>`;
 
       document.getElementById('goals-panel').style.display = 'block';
       document.getElementById('goals-content').innerHTML = html;
     }
 
-    async function addGoal(matchId, playerId, teamId, refresh = true) {
+    async function addGoal(matchId, playerId, teamId) {
       await db.from('goals').insert({ match_id: matchId, player_id: playerId, team_id: teamId });
-      if (refresh) {
-        await loadData();
-        selectMatchForGoals(matchId);
-      }
+      // Reload data and keep panel open
+      await loadData();
+      selectMatchForGoals(matchId);
     }
 
     async function finishMatch(matchId, score1, score2) {
       await db.from('matches').update({ score1, score2, played: true }).eq('id', matchId);
       await loadData();
-      renderAdmin();
+      closeGoalsPanel();
+    }
+
+    function closeGoalsPanel() {
+      document.getElementById('goals-panel').style.display = 'none';
+      const schedulesSection = document.getElementById('schedules-section');
+      if (schedulesSection) schedulesSection.style.display = 'block';
     }
 
     function toLocalInputValue(dateStr) {
@@ -1657,6 +1667,7 @@
     window.selectMatchForGoals = selectMatchForGoals;
     window.addGoal = addGoal;
     window.finishMatch = finishMatch;
+    window.closeGoalsPanel = closeGoalsPanel;
 
     init();
   </script>
