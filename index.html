@@ -816,6 +816,19 @@
       const third = state.matches.find(m => m.stage === 'third_place');
 
       let html = '<div class="card fade-in"><h2>🏅 Fase Final</h2>';
+
+      if (state.session && !semi1 && !semi2) {
+        const groupA = state.matches.filter(m => m.stage === 'group' && m.group_name === 'A');
+        const groupB = state.matches.filter(m => m.stage === 'group' && m.group_name === 'B');
+        const groupsReady = groupA.length > 0 && groupA.every(m => m.played) && groupB.length > 0 && groupB.every(m => m.played);
+        html += `<button class="btn-small" style="margin-bottom: 16px;" ${groupsReady ? '' : 'disabled'} onclick="generateSemis()">Gerar Meias-Finais</button>`;
+        if (!groupsReady) html += '<p class="empty-hint" style="margin-bottom: 16px;">Termine todos os jogos de grupo primeiro.</p>';
+      }
+
+      if (state.session && semi1?.played && semi2?.played && !final && !third) {
+        html += '<button class="btn-small" style="margin-bottom: 16px;" onclick="generateFinal()">Gerar Final e 3º Lugar</button>';
+      }
+
       html += '<div class="groups-grid">';
 
       html += '<div><h3>Meias-Finais</h3>';
@@ -922,13 +935,9 @@
       html += '</select><input type="text" id="player-name" placeholder="Nome do jogador" /><button class="btn-small" onclick="addPlayer()">Adicionar</button></div></div>';
 
       const teamOptions = state.teams.map(t => `<option value="${t.id}">${escape(t.name)}</option>`).join('');
-      html += `<div class="admin-section"><h3>Criar Jogo</h3><div class="form-row">
-        <select id="match-stage" onchange="document.getElementById('match-group').style.display = this.value === 'group' ? '' : 'none'">
-          <option value="group">Fase de Grupos</option>
-          <option value="semi">Meia-Final</option>
-          <option value="third_place">3º Lugar</option>
-          <option value="final">Final</option>
-        </select>
+      html += `<div class="admin-section"><h3>Criar Jogo de Grupo</h3>
+        <p class="empty-hint" style="margin-bottom: 12px;">As meias-finais, o 3º lugar e a final são calculados automaticamente com base na classificação — veja o separador "Fase Final".</p>
+        <div class="form-row">
         <select id="match-group"><option value="A">Grupo A</option><option value="B">Grupo B</option></select>
         <select id="match-team1"><option value="">Equipa 1</option>${teamOptions}</select>
         <select id="match-team2"><option value="">Equipa 2</option>${teamOptions}</select>
@@ -936,10 +945,13 @@
         <button class="btn-small" onclick="createMatch()">Criar Jogo</button>
       </div></div>`;
 
+      const stageLabels = { group: 'Grupo', semi: 'Meia-Final', third_place: '3º Lugar', final: 'Final' };
       html += '<div class="admin-section"><h3>Jogos e Horários</h3>';
       if (state.matches.length) {
         state.matches.forEach(m => {
+          const stageLabel = stageLabels[m.stage] || m.stage;
           html += `<div class="team-item" style="flex-direction: column; align-items: flex-start;">
+            <small style="opacity: 0.7;">${escape(stageLabel)}${m.stage === 'group' ? ' ' + escape(m.group_name || '') : ''}</small>
             <strong>${escape(m.team1?.name || 'TBD')} vs ${escape(m.team2?.name || 'TBD')}</strong>
             <div style="width: 100%; margin-top: 10px; display: flex; gap: 10px; flex-wrap: wrap;">
               <input type="datetime-local" id="sched-${m.id}" value="${toLocalInputValue(m.scheduled_at)}" />
@@ -1039,23 +1051,50 @@
     }
 
     async function createMatch() {
-      const stage = document.getElementById('match-stage')?.value;
       const groupName = document.getElementById('match-group')?.value;
       const team1Id = document.getElementById('match-team1')?.value;
       const team2Id = document.getElementById('match-team2')?.value;
       const dateVal = document.getElementById('match-date')?.value;
       if (!team1Id || !team2Id) return alert('Selecione as duas equipas');
       if (team1Id === team2Id) return alert('As equipas devem ser diferentes');
-      const payload = {
-        stage,
+      await db.from('matches').insert({
+        stage: 'group',
+        group_name: groupName,
         team1_id: team1Id,
         team2_id: team2Id,
         scheduled_at: dateVal ? new Date(dateVal).toISOString() : null
-      };
-      if (stage === 'group') payload.group_name = groupName;
-      await db.from('matches').insert(payload);
+      });
       await loadData();
       renderAdmin();
+    }
+
+    async function generateSemis() {
+      const sa = computeStandings(state.teams, state.matches, 'A');
+      const sb = computeStandings(state.teams, state.matches, 'B');
+      if (sa.length < 2 || sb.length < 2) return alert('É preciso pelo menos 2 equipas classificadas em cada grupo');
+      await db.from('matches').insert([
+        { stage: 'semi', semi_slot: 'semi1', team1_id: sa[0].team.id, team2_id: sb[1].team.id },
+        { stage: 'semi', semi_slot: 'semi2', team1_id: sb[0].team.id, team2_id: sa[1].team.id }
+      ]);
+      await loadData();
+      render();
+    }
+
+    async function generateFinal() {
+      const semi1 = state.matches.find(m => m.stage === 'semi' && m.semi_slot === 'semi1');
+      const semi2 = state.matches.find(m => m.stage === 'semi' && m.semi_slot === 'semi2');
+      if (!semi1?.played || !semi2?.played) return alert('As duas meias-finais têm de estar concluídas');
+      if (semi1.score1 === semi1.score2 || semi2.score1 === semi2.score2) return alert('As meias-finais não podem terminar empatadas');
+      const winner1 = semi1.score1 > semi1.score2 ? semi1.team1_id : semi1.team2_id;
+      const loser1 = semi1.score1 > semi1.score2 ? semi1.team2_id : semi1.team1_id;
+      const winner2 = semi2.score1 > semi2.score2 ? semi2.team1_id : semi2.team2_id;
+      const loser2 = semi2.score1 > semi2.score2 ? semi2.team2_id : semi2.team1_id;
+      await db.from('matches').insert([
+        { stage: 'final', team1_id: winner1, team2_id: winner2 },
+        { stage: 'third_place', team1_id: loser1, team2_id: loser2 }
+      ]);
+      await loadData();
+      render();
     }
 
     async function updateSchedule(matchId) {
@@ -1081,6 +1120,8 @@
     window.createMatch = createMatch;
     window.updateSchedule = updateSchedule;
     window.deleteMatch = deleteMatch;
+    window.generateSemis = generateSemis;
+    window.generateFinal = generateFinal;
 
     init();
   </script>
