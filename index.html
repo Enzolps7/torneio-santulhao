@@ -56,9 +56,8 @@
     position: absolute;
     inset: -1px;
     background-image:
-      linear-gradient(45deg, rgba(212, 175, 55, 0.09) 1px, transparent 1px),
-      linear-gradient(-45deg, rgba(212, 175, 55, 0.09) 1px, transparent 1px);
-    background-size: 46px 46px;
+      repeating-linear-gradient(45deg, rgba(212, 175, 55, 0.16) 0, rgba(212, 175, 55, 0.16) 1.5px, transparent 1.5px, transparent 46px),
+      repeating-linear-gradient(-45deg, rgba(212, 175, 55, 0.16) 0, rgba(212, 175, 55, 0.16) 1.5px, transparent 1.5px, transparent 46px);
     -webkit-mask-image: radial-gradient(ellipse 90% 90% at 50% 20%, black 35%, transparent 100%);
     mask-image: radial-gradient(ellipse 90% 90% at 50% 20%, black 35%, transparent 100%);
     animation: gridDrift 40s linear infinite;
@@ -66,7 +65,7 @@
 
   @keyframes gridDrift {
     from { background-position: 0 0, 0 0; }
-    to { background-position: 46px 46px, -46px 46px; }
+    to { background-position: 65px 0, -65px 0; }
   }
 
   .bg-sweep {
