@@ -769,6 +769,64 @@
     flex-wrap: wrap;
   }
 
+  .team-expand {
+    border: 1px solid rgba(212, 175, 55, 0.18);
+    border-radius: 10px;
+    margin: 10px 0;
+    overflow: hidden;
+    background: rgba(212, 175, 55, 0.04);
+  }
+
+  .team-toggle {
+    width: 100%;
+    background: transparent;
+    box-shadow: none;
+    color: var(--cream);
+    border: none;
+    border-radius: 0;
+    padding: 14px 16px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-family: var(--font-body);
+    font-weight: 700;
+    font-size: 0.95em;
+    cursor: pointer;
+    text-align: left;
+  }
+
+  .team-toggle:hover {
+    background: rgba(212, 175, 55, 0.08);
+    transform: none;
+    box-shadow: none;
+  }
+
+  .team-toggle .chevron {
+    color: var(--gold);
+    transition: transform 0.25s ease;
+  }
+
+  .team-players {
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.3s ease, padding 0.3s ease;
+    padding: 0 16px;
+  }
+
+  .team-players.open {
+    max-height: 400px;
+    padding: 4px 16px 14px;
+  }
+
+  .player-row {
+    padding: 6px 0;
+    border-top: 1px solid rgba(212, 175, 55, 0.12);
+    font-size: 0.9em;
+    opacity: 0.9;
+  }
+
+  .player-row:first-child { border-top: none; }
+
   .scorers-list {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
@@ -831,6 +889,28 @@
     font-size: 0.85em;
     opacity: 0.7;
     letter-spacing: 0.5px;
+  }
+
+  .admin-access {
+    display: block;
+    margin: 6px auto 0;
+    width: auto;
+    background: none;
+    box-shadow: none;
+    border: none;
+    color: var(--cream);
+    opacity: 0.25;
+    font-size: 1.1em;
+    line-height: 1;
+    padding: 6px 10px;
+    cursor: pointer;
+    transition: opacity 0.25s ease;
+  }
+
+  .admin-access:hover {
+    opacity: 0.8;
+    transform: none;
+    box-shadow: none;
   }
 
   .empty-hint {
@@ -901,11 +981,12 @@
 
   <footer>
     <p>Torneio de Santulhão 2026</p>
+    <button id="admin-access" class="admin-access" title="Área reservada" aria-label="Área reservada">·</button>
   </footer>
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script>
-    let db, state = { session: null, teams: [], matches: [], tab: 'standings', loading: true };
+    let db, state = { session: null, teams: [], matches: [], tab: 'calendar', loading: true };
     const ADMIN_PASSWORD = 'Santulhao.7';
 
     function hideSplash() {
@@ -928,6 +1009,12 @@
       // Render nav + a visible loading state immediately — never block the UI on the network.
       renderNav();
       render();
+
+      document.getElementById('admin-access')?.addEventListener('click', () => {
+        state.tab = 'admin';
+        renderNav();
+        render();
+      });
 
       let attempts = 0;
       while (!window.supabase && attempts < 20) {
@@ -985,7 +1072,7 @@
         { id: 'standings', label: '📊 Classificação' },
         { id: 'bracket', label: '🏅 Fase Final' },
         { id: 'scorers', label: '⚽ Marcadores' },
-        { id: 'admin', label: '🔐 Admin' }
+        { id: 'teams', label: '👥 Equipas' }
       ];
 
       let html = '';
@@ -1177,6 +1264,38 @@
       return html;
     }
 
+    function renderTeams() {
+      let html = '<div class="card fade-in"><h2>👥 Equipas</h2>';
+      ['A', 'B'].forEach(group => {
+        const teams = state.teams.filter(t => t.group_name === group);
+        if (!teams.length) return;
+        html += `<h3>Grupo ${group}</h3>`;
+        teams.forEach(t => {
+          const players = t.players || [];
+          html += `<div class="team-expand">
+            <button class="team-toggle" onclick="toggleTeam('${t.id}')">
+              <span>${escape(t.name)}</span>
+              <span class="chevron" id="chevron-${t.id}">▾</span>
+            </button>
+            <div class="team-players" id="players-${t.id}">
+              ${players.length ? players.map(p => `<div class="player-row">${escape(p.name)}</div>`).join('') : '<p class="empty-hint">Sem jogadores registados.</p>'}
+            </div>
+          </div>`;
+        });
+      });
+      if (!state.teams.length) html += '<p class="empty-hint">Nenhuma equipa registada ainda.</p>';
+      html += '</div>';
+      return html;
+    }
+
+    function toggleTeam(id) {
+      const panel = document.getElementById(`players-${id}`);
+      const chevron = document.getElementById(`chevron-${id}`);
+      if (!panel) return;
+      const open = panel.classList.toggle('open');
+      if (chevron) chevron.textContent = open ? '▴' : '▾';
+    }
+
     async function renderAdmin() {
       if (!state.session) {
         let html = `<div class="login-box fade-in">
@@ -1253,6 +1372,7 @@
         case 'calendar': html = renderCalendar(); break;
         case 'bracket': html = renderBracket(); break;
         case 'scorers': html = renderScorers(); break;
+        case 'teams': html = renderTeams(); break;
         case 'admin': renderAdmin(); return;
       }
       document.getElementById('content').innerHTML = html;
@@ -1394,6 +1514,7 @@
     window.deleteMatch = deleteMatch;
     window.generateSemis = generateSemis;
     window.generateFinal = generateFinal;
+    window.toggleTeam = toggleTeam;
 
     init();
   </script>
