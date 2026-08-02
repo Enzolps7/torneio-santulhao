@@ -1,0 +1,3 @@
+// Preenchido automaticamente após a criação do projeto Supabase.
+export const SUPABASE_URL = "https://bwseriegvtvjidbacwsa.supabase.co";
+export const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJ3c2VyaWVndnR2amlkYmFjd3NhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODU2NzQwOTEsImV4cCI6MjEwMTI1MDA5MX0.fiddoMRn4I0E8gXwd6FMsa25xBW4i-_w5MmTfyCw6Ac";

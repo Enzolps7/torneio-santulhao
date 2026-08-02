@@ -1,0 +1,375 @@
+:root {
+  --green-950: #06231a;
+  --green-900: #0b3d2e;
+  --green-800: #114d3a;
+  --green-700: #17614a;
+  --gold: #d4af37;
+  --gold-light: #f0d878;
+  --cream: #f5f0e1;
+  --red: #b3382c;
+  --radius: 10px;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  font-family: "Segoe UI", Roboto, Arial, sans-serif;
+  background: linear-gradient(180deg, var(--green-950), var(--green-900) 40%, var(--green-950));
+  color: var(--cream);
+  min-height: 100vh;
+}
+
+header.site-header {
+  padding: 22px 16px 14px;
+  text-align: center;
+  border-bottom: 2px solid var(--gold);
+  background: rgba(0, 0, 0, 0.15);
+}
+
+header.site-header h1 {
+  margin: 0;
+  color: var(--gold-light);
+  font-size: 1.7rem;
+  letter-spacing: 0.5px;
+  text-shadow: 0 2px 6px rgba(0, 0, 0, 0.4);
+}
+
+header.site-header p {
+  margin: 4px 0 0;
+  color: var(--cream);
+  opacity: 0.8;
+  font-size: 0.9rem;
+}
+
+nav.tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  justify-content: center;
+  padding: 14px 10px;
+}
+
+nav.tabs button {
+  background: var(--green-800);
+  color: var(--cream);
+  border: 1px solid var(--gold);
+  padding: 8px 16px;
+  border-radius: 999px;
+  cursor: pointer;
+  font-size: 0.9rem;
+  transition: 0.15s;
+}
+
+nav.tabs button:hover {
+  background: var(--green-700);
+}
+
+nav.tabs button.active {
+  background: var(--gold);
+  color: var(--green-950);
+  font-weight: 700;
+  border-color: var(--gold-light);
+}
+
+main {
+  max-width: 980px;
+  margin: 0 auto;
+  padding: 10px 14px 60px;
+}
+
+.card {
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(212, 175, 55, 0.35);
+  border-radius: var(--radius);
+  padding: 16px;
+  margin-bottom: 18px;
+}
+
+.card h2 {
+  margin-top: 0;
+  color: var(--gold-light);
+  font-size: 1.15rem;
+  border-bottom: 1px solid rgba(212, 175, 55, 0.3);
+  padding-bottom: 8px;
+}
+
+.groups-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 16px;
+}
+
+@media (min-width: 720px) {
+  .groups-grid {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.88rem;
+}
+
+th,
+td {
+  padding: 6px 6px;
+  text-align: center;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+th {
+  color: var(--gold-light);
+  font-weight: 600;
+  font-size: 0.78rem;
+  text-transform: uppercase;
+}
+
+td:first-child,
+th:first-child {
+  text-align: left;
+}
+
+tr.rank-1 td:first-child,
+tr.rank-2 td:first-child {
+  color: var(--gold-light);
+  font-weight: 700;
+}
+
+.match-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 10px 8px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  flex-wrap: wrap;
+}
+
+.match-row:last-child {
+  border-bottom: none;
+}
+
+.match-teams {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex: 1;
+  min-width: 220px;
+}
+
+.match-teams .team {
+  flex: 1;
+  font-weight: 600;
+}
+
+.match-teams .team.right {
+  text-align: right;
+}
+
+.score-badge {
+  background: var(--green-950);
+  border: 1px solid var(--gold);
+  color: var(--gold-light);
+  font-weight: 700;
+  padding: 4px 10px;
+  border-radius: 6px;
+  min-width: 56px;
+  text-align: center;
+}
+
+.match-meta {
+  font-size: 0.78rem;
+  opacity: 0.75;
+  min-width: 150px;
+  text-align: right;
+}
+
+.scorers-line {
+  width: 100%;
+  font-size: 0.78rem;
+  opacity: 0.85;
+  padding-left: 4px;
+  color: var(--gold-light);
+}
+
+.bracket {
+  display: flex;
+  flex-direction: column;
+  gap: 22px;
+}
+
+.bracket-round h3 {
+  color: var(--gold-light);
+  font-size: 0.95rem;
+  margin: 0 0 8px;
+}
+
+.bracket-matches {
+  display: grid;
+  gap: 12px;
+  grid-template-columns: 1fr;
+}
+
+@media (min-width: 720px) {
+  .bracket-matches.two-col {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+.scorers-table td:first-child {
+  font-weight: 600;
+}
+
+.scorers-table .rank {
+  color: var(--gold-light);
+  font-weight: 700;
+}
+
+button.btn {
+  background: var(--gold);
+  color: var(--green-950);
+  border: none;
+  padding: 8px 14px;
+  border-radius: 6px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+button.btn:hover {
+  background: var(--gold-light);
+}
+
+button.btn.secondary {
+  background: transparent;
+  color: var(--gold-light);
+  border: 1px solid var(--gold);
+}
+
+button.btn.danger {
+  background: var(--red);
+  color: var(--cream);
+}
+
+input,
+select {
+  background: var(--green-950);
+  border: 1px solid rgba(212, 175, 55, 0.5);
+  color: var(--cream);
+  padding: 7px 9px;
+  border-radius: 6px;
+  font-size: 0.9rem;
+}
+
+form.inline-form {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  align-items: center;
+  margin-bottom: 12px;
+}
+
+.admin-team-block {
+  border: 1px solid rgba(212, 175, 55, 0.3);
+  border-radius: 8px;
+  padding: 10px;
+  margin-bottom: 12px;
+}
+
+.admin-team-block h3 {
+  margin: 0 0 8px;
+  color: var(--gold-light);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.player-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: var(--green-800);
+  border: 1px solid rgba(212, 175, 55, 0.4);
+  padding: 3px 8px;
+  border-radius: 999px;
+  font-size: 0.8rem;
+  margin: 3px 4px 3px 0;
+}
+
+.player-chip button {
+  background: none;
+  border: none;
+  color: var(--red);
+  cursor: pointer;
+  font-weight: 700;
+  padding: 0;
+}
+
+.login-box {
+  max-width: 340px;
+  margin: 40px auto;
+}
+
+.login-box input {
+  width: 100%;
+  margin-bottom: 10px;
+}
+
+.error-msg {
+  color: #ff8f7a;
+  font-size: 0.85rem;
+  margin-top: 6px;
+}
+
+.result-form {
+  display: grid;
+  gap: 8px;
+  margin-top: 10px;
+  padding-top: 10px;
+  border-top: 1px dashed rgba(212, 175, 55, 0.3);
+}
+
+.result-form .score-inputs {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.result-form .score-inputs input {
+  width: 56px;
+  text-align: center;
+}
+
+.goal-row {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+footer {
+  text-align: center;
+  opacity: 0.6;
+  font-size: 0.78rem;
+  padding: 20px;
+}
+
+.badge-live {
+  display: inline-block;
+  background: var(--gold);
+  color: var(--green-950);
+  font-size: 0.65rem;
+  font-weight: 700;
+  padding: 2px 6px;
+  border-radius: 4px;
+  margin-left: 6px;
+}
+
+.empty-hint {
+  opacity: 0.7;
+  font-style: italic;
+  font-size: 0.9rem;
+}
