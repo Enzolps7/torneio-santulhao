@@ -934,16 +934,10 @@
       state.teams.forEach(t => html += `<option value="${t.id}">${escape(t.name)}</option>`);
       html += '</select><input type="text" id="player-name" placeholder="Nome do jogador" /><button class="btn-small" onclick="addPlayer()">Adicionar</button></div></div>';
 
-      const teamOptions = state.teams.map(t => `<option value="${t.id}">${escape(t.name)}</option>`).join('');
-      html += `<div class="admin-section"><h3>Criar Jogo de Grupo</h3>
-        <p class="empty-hint" style="margin-bottom: 12px;">As meias-finais, o 3º lugar e a final são calculados automaticamente com base na classificação — veja o separador "Fase Final".</p>
-        <div class="form-row">
-        <select id="match-group"><option value="A">Grupo A</option><option value="B">Grupo B</option></select>
-        <select id="match-team1"><option value="">Equipa 1</option>${teamOptions}</select>
-        <select id="match-team2"><option value="">Equipa 2</option>${teamOptions}</select>
-        <input type="datetime-local" id="match-date" />
-        <button class="btn-small" onclick="createMatch()">Criar Jogo</button>
-      </div></div>`;
+      html += `<div class="admin-section"><h3>Calendário de Grupos</h3>
+        <p class="empty-hint" style="margin-bottom: 12px;">Os jogos da fase de grupos (todos contra todos) e da fase final são criados automaticamente. Defina apenas a hora de cada jogo em baixo.</p>
+        <button class="btn-small" onclick="generateGroupFixtures()">Atualizar Jogos de Grupo</button>
+      </div>`;
 
       const stageLabels = { group: 'Grupo', semi: 'Meia-Final', third_place: '3º Lugar', final: 'Final' };
       html += '<div class="admin-section"><h3>Jogos e Horários</h3>';
@@ -1014,7 +1008,7 @@
       await db.from('teams').insert({ name, group_name: group });
       document.getElementById('team-name').value = '';
       await loadData();
-      renderAdmin();
+      await generateGroupFixtures();
     }
 
     async function deleteTeam(id) {
@@ -1050,21 +1044,25 @@
       return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
     }
 
-    async function createMatch() {
-      const groupName = document.getElementById('match-group')?.value;
-      const team1Id = document.getElementById('match-team1')?.value;
-      const team2Id = document.getElementById('match-team2')?.value;
-      const dateVal = document.getElementById('match-date')?.value;
-      if (!team1Id || !team2Id) return alert('Selecione as duas equipas');
-      if (team1Id === team2Id) return alert('As equipas devem ser diferentes');
-      await db.from('matches').insert({
-        stage: 'group',
-        group_name: groupName,
-        team1_id: team1Id,
-        team2_id: team2Id,
-        scheduled_at: dateVal ? new Date(dateVal).toISOString() : null
+    async function generateGroupFixtures() {
+      const existingPairs = new Set(
+        state.matches.filter(m => m.stage === 'group').map(m => [m.team1_id, m.team2_id].sort().join('|'))
+      );
+      const toInsert = [];
+      ['A', 'B'].forEach(group => {
+        const teams = state.teams.filter(t => t.group_name === group);
+        for (let i = 0; i < teams.length; i++) {
+          for (let j = i + 1; j < teams.length; j++) {
+            const pairKey = [teams[i].id, teams[j].id].sort().join('|');
+            if (existingPairs.has(pairKey)) continue;
+            toInsert.push({ stage: 'group', group_name: group, team1_id: teams[i].id, team2_id: teams[j].id });
+          }
+        }
       });
-      await loadData();
+      if (toInsert.length) {
+        await db.from('matches').insert(toInsert);
+        await loadData();
+      }
       renderAdmin();
     }
 
@@ -1117,7 +1115,7 @@
     window.deleteTeam = deleteTeam;
     window.addPlayer = addPlayer;
     window.saveResult = saveResult;
-    window.createMatch = createMatch;
+    window.generateGroupFixtures = generateGroupFixtures;
     window.updateSchedule = updateSchedule;
     window.deleteMatch = deleteMatch;
     window.generateSemis = generateSemis;
