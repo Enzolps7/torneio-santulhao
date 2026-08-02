@@ -1,6 +1,6 @@
 <!doctype html>
-<!-- VERSION: 20260802182836 -->
-<html lang="pt-PT">
+<!-- VERSION: 20260802-v3 - FORCE CACHE CLEAR -->
+<html lang="pt-PT" data-version="20260802-v3">
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -994,16 +994,30 @@
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script>
-    // Version check - force hard refresh if cached version detected
-    const CURRENT_VERSION = '20260802182836';
-    const STORAGE_KEY = 'santulhao_page_version';
+    // AGGRESSIVE VERSION CHECK - forces refresh on all devices
+    const CURRENT_VERSION = '20260802-v3';
+    const STORAGE_KEY = 'santulhao_version';
+
+    // Clear old storage keys
+    localStorage.removeItem('santulhao_page_version');
+
+    // Check version
     const storedVersion = localStorage.getItem(STORAGE_KEY);
+    console.log('Stored version:', storedVersion, 'Current:', CURRENT_VERSION);
+
     if (storedVersion && storedVersion !== CURRENT_VERSION) {
+      console.log('Version mismatch! Force reload...');
       localStorage.setItem(STORAGE_KEY, CURRENT_VERSION);
-      window.location.reload(true);
+      localStorage.clear(); // Clear all caches
+      setTimeout(() => {
+        window.location.href = window.location.href.split('?')[0] + '?nocache=' + Date.now();
+      }, 100);
     } else {
       localStorage.setItem(STORAGE_KEY, CURRENT_VERSION);
     }
+
+    // Also force a fetch to verify we have latest HTML
+    fetch(window.location.href, { cache: 'no-store' }).catch(() => {})
 
     let db, state = { session: null, teams: [], matches: [], tab: 'calendar', loading: true };
     // Force calendar as default tab
