@@ -660,8 +660,11 @@
       if (splash) splash.classList.add('hidden');
     }
 
+    // Splash is purely decorative — always dismiss on its own timer,
+    // completely independent of network/data loading so it can never hang.
+    setTimeout(hideSplash, 2200);
+
     async function init() {
-      const splashStart = Date.now();
       let attempts = 0;
       while (!window.supabase && attempts < 20) {
         await new Promise(r => setTimeout(r, 100));
@@ -670,36 +673,36 @@
 
       if (!window.supabase) {
         document.getElementById('content').innerHTML = '<div class="card"><p class="empty-hint">⚠ Erro ao carregar. Recarregue a página.</p></div>';
-        hideSplash();
         return;
       }
 
-      supabase = window.supabase.createClient(
-        'https://bwseriegvtvjidbacwsa.supabase.co',
-        'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJ3c2VyaWVndnR2amlkYmFjd3NhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODU2NzQwOTEsImV4cCI6MjEwMTI1MDA5MX0.fiddoMRn4I0E8gXwd6FMsa25xBW4i-_w5MmTfyCw6Ac'
-      );
+      try {
+        supabase = window.supabase.createClient(
+          'https://bwseriegvtvjidbacwsa.supabase.co',
+          'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJ3c2VyaWVndnR2amlkYmFjd3NhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODU2NzQwOTEsImV4cCI6MjEwMTI1MDA5MX0.fiddoMRn4I0E8gXwd6FMsa25xBW4i-_w5MmTfyCw6Ac'
+        );
 
-      const session = await supabase.auth.getSession();
-      state.session = session.data.session;
+        const session = await supabase.auth.getSession();
+        state.session = session.data.session;
 
-      supabase.auth.onAuthStateChange((_evt, sess) => {
-        state.session = sess;
+        supabase.auth.onAuthStateChange((_evt, sess) => {
+          state.session = sess;
+          renderNav();
+          render();
+        });
+
+        await loadData();
+
+        supabase.channel('changes')
+          .on('postgres_changes', { event: '*', schema: 'public' }, () => loadData().then(render))
+          .subscribe();
+      } catch (e) {
+        console.error('Erro ao inicializar:', e);
+      } finally {
+        state.loading = false;
         renderNav();
         render();
-      });
-
-      await loadData();
-      state.loading = false;
-      renderNav();
-      render();
-
-      supabase.channel('changes')
-        .on('postgres_changes', { event: '*', schema: 'public' }, () => loadData().then(render))
-        .subscribe();
-
-      const elapsed = Date.now() - splashStart;
-      const minSplash = 2200;
-      setTimeout(hideSplash, Math.max(0, minSplash - elapsed));
+      }
     }
 
     async function loadData() {
@@ -1025,9 +1028,6 @@
     window.saveResult = saveResult;
 
     init();
-
-    // Safety net: never let the splash hang forever
-    setTimeout(hideSplash, 6000);
   </script>
 </body>
 </html>
