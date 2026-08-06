@@ -1019,9 +1019,9 @@
     // Also force a fetch to verify we have latest HTML
     fetch(window.location.href, { cache: 'no-store' }).catch(() => {})
 
-    let db, state = { session: null, teams: [], matches: [], tab: 'calendar', loading: true, selectedMatchForGoals: null };
-    // Force calendar as default tab
-    const DEFAULT_TAB = 'calendar';
+    let db, state = { session: null, teams: [], matches: [], tab: 'bracket', loading: true, selectedMatchForGoals: null };
+    // Force fase final as default tab
+    const DEFAULT_TAB = 'bracket';
     const ADMIN_PASSWORD = 'Santulhao.7';
 
     function hideSplash() {
@@ -1111,7 +1111,7 @@
 
     function renderNav() {
       const tabs = [
-        { id: 'calendar', label: '📅 Calendário' },
+        { id: 'calendar', label: '📅 Fase de Grupos' },
         { id: 'standings', label: '📊 Classificação' },
         { id: 'bracket', label: '🏅 Fase Final' },
         { id: 'scorers', label: '⚽ Marcadores' }
@@ -1261,6 +1261,7 @@
             <div class="score">${semi1.played || (semi1.goals && semi1.goals.length > 0) ? semi1Score1 + '-' + semi1Score2 : 'vs'}</div>
             <span>${getTeamName(semi1, 2)}</span>
           </div>
+          <div class="match-info">${semi1.scheduled_at ? new Date(semi1.scheduled_at).toLocaleString('pt-PT') : 'Data TBD'}</div>
         </div>`;
       }
       if (semi2) {
@@ -1272,6 +1273,7 @@
             <div class="score">${semi2.played || (semi2.goals && semi2.goals.length > 0) ? semi2Score1 + '-' + semi2Score2 : 'vs'}</div>
             <span>${getTeamName(semi2, 2)}</span>
           </div>
+          <div class="match-info">${semi2.scheduled_at ? new Date(semi2.scheduled_at).toLocaleString('pt-PT') : 'Data TBD'}</div>
         </div>`;
       }
       if (!semi1 && !semi2) html += '<p class="empty-hint">A aguardar apuramento...</p>';
@@ -1287,6 +1289,7 @@
             <div class="score">${final.played || (final.goals && final.goals.length > 0) ? finalScore1 + '-' + finalScore2 : 'vs'}</div>
             <span>${getTeamName(final, 2)}</span>
           </div>
+          <div class="match-info">${final.scheduled_at ? new Date(final.scheduled_at).toLocaleString('pt-PT') : 'Data TBD'}</div>
         </div>`;
       }
       if (third) {
@@ -1298,6 +1301,7 @@
             <div class="score">${third.played || (third.goals && third.goals.length > 0) ? thirdScore1 + '-' + thirdScore2 : 'vs'}</div>
             <span>${getTeamName(third, 2)}</span>
           </div>
+          <div class="match-info">${third.scheduled_at ? new Date(third.scheduled_at).toLocaleString('pt-PT') : 'Data TBD'}</div>
         </div>`;
       }
       if (!final && !third) html += '<p class="empty-hint">A aguardar apuramento...</p>';
