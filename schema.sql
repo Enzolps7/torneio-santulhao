@@ -120,10 +120,14 @@ begin
     return NEW;
   end if;
 
+  -- Cria já a Final e o jogo de 3º Lugar, sem equipas atribuídas,
+  -- para que o admin possa definir a hora destes jogos desde já.
   insert into matches (stage, semi_slot, team1_id, team2_id, placeholder1, placeholder2)
   values
     ('semi', 'semi1', a_teams[1], b_teams[2], '1º A', '2º B'),
-    ('semi', 'semi2', b_teams[1], a_teams[2], '1º B', '2º A');
+    ('semi', 'semi2', b_teams[1], a_teams[2], '1º B', '2º A'),
+    ('final', null, null, null, 'Vencedor SF1', 'Vencedor SF2'),
+    ('third_place', null, null, null, 'Perdedor SF1', 'Perdedor SF2');
 
   return NEW;
 end;
@@ -136,48 +140,39 @@ create trigger trg_generate_semis
   when (NEW.stage = 'group' and NEW.played = true)
   execute function generate_semis_if_ready();
 
--- Quando as duas meias-finais estão concluídas, gera a Final e o
--- jogo de 3º lugar, se ainda não existirem.
-create or replace function generate_final_if_ready() returns trigger as $$
+-- Assim que uma meia-final é concluída, coloca imediatamente o nome
+-- do vencedor na Final e o do perdedor na Petite Final (3º lugar) —
+-- sem esperar que a outra meia-final também termine.
+drop trigger if exists trg_generate_final on matches;
+drop function if exists generate_final_if_ready();
+
+create or replace function fill_final_teams() returns trigger as $$
 declare
-  semi1 record;
-  semi2 record;
-  existing_final int;
-  winner1 uuid; loser1 uuid; winner2 uuid; loser2 uuid;
+  winner uuid;
+  loser uuid;
 begin
-  select * into semi1 from matches where stage = 'semi' and semi_slot = 'semi1' and played = true limit 1;
-  select * into semi2 from matches where stage = 'semi' and semi_slot = 'semi2' and played = true limit 1;
-
-  if semi1 is null or semi2 is null then
+  if NEW.score1 is null or NEW.score2 is null or NEW.score1 = NEW.score2 then
     return NEW;
   end if;
 
-  select count(*) into existing_final from matches where stage in ('final', 'third_place');
-  if existing_final > 0 then
-    return NEW;
+  winner := case when NEW.score1 > NEW.score2 then NEW.team1_id else NEW.team2_id end;
+  loser  := case when NEW.score1 > NEW.score2 then NEW.team2_id else NEW.team1_id end;
+
+  if NEW.semi_slot = 'semi1' then
+    update matches set team1_id = winner where stage = 'final';
+    update matches set team1_id = loser where stage = 'third_place';
+  elsif NEW.semi_slot = 'semi2' then
+    update matches set team2_id = winner where stage = 'final';
+    update matches set team2_id = loser where stage = 'third_place';
   end if;
-
-  if semi1.score1 = semi1.score2 or semi2.score1 = semi2.score2 then
-    return NEW;
-  end if;
-
-  winner1 := case when semi1.score1 > semi1.score2 then semi1.team1_id else semi1.team2_id end;
-  loser1  := case when semi1.score1 > semi1.score2 then semi1.team2_id else semi1.team1_id end;
-  winner2 := case when semi2.score1 > semi2.score2 then semi2.team1_id else semi2.team2_id end;
-  loser2  := case when semi2.score1 > semi2.score2 then semi2.team2_id else semi2.team1_id end;
-
-  insert into matches (stage, team1_id, team2_id, placeholder1, placeholder2)
-  values
-    ('final', winner1, winner2, 'Vencedor SF1', 'Vencedor SF2'),
-    ('third_place', loser1, loser2, 'Perdedor SF1', 'Perdedor SF2');
 
   return NEW;
 end;
 $$ language plpgsql security definer;
 
-drop trigger if exists trg_generate_final on matches;
-create trigger trg_generate_final
+drop trigger if exists trg_fill_final_teams on matches;
+create trigger trg_fill_final_teams
   after update of played on matches
   for each row
   when (NEW.stage = 'semi' and NEW.played = true)
-  execute function generate_final_if_ready();
+  execute function fill_final_teams();
