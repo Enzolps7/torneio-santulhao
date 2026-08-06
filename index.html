@@ -1333,23 +1333,6 @@
       if (!semi1 && !semi2) html += '<p class="empty-hint">A aguardar apuramento...</p>';
       html += '</div>';
 
-      html += '<div><h3>🏆 Final</h3>';
-      if (final) {
-        const finalScore1 = (final.goals || []).filter(g => g.team_id === final.team1_id).length;
-        const finalScore2 = (final.goals || []).filter(g => g.team_id === final.team2_id).length;
-        html += `<div class="match-card">
-          <div class="match-teams">
-            <span>${getTeamName(final, 1)}</span>
-            <div class="score">${final.played || (final.goals && final.goals.length > 0) ? finalScore1 + '-' + finalScore2 : 'vs'}</div>
-            <span>${getTeamName(final, 2)}</span>
-          </div>
-          <div class="match-info">${final.scheduled_at ? new Date(final.scheduled_at).toLocaleString('pt-PT') : 'Data TBD'}</div>
-        </div>`;
-      } else {
-        html += '<p class="empty-hint">A aguardar apuramento...</p>';
-      }
-      html += '</div>';
-
       html += '<div><h3>🥉 3º Lugar</h3>';
       if (third) {
         const thirdScore1 = (third.goals || []).filter(g => g.team_id === third.team1_id).length;
@@ -1361,6 +1344,23 @@
             <span>${getTeamName(third, 2)}</span>
           </div>
           <div class="match-info">${third.scheduled_at ? new Date(third.scheduled_at).toLocaleString('pt-PT') : 'Data TBD'}</div>
+        </div>`;
+      } else {
+        html += '<p class="empty-hint">A aguardar apuramento...</p>';
+      }
+      html += '</div>';
+
+      html += '<div><h3>🏆 Final</h3>';
+      if (final) {
+        const finalScore1 = (final.goals || []).filter(g => g.team_id === final.team1_id).length;
+        const finalScore2 = (final.goals || []).filter(g => g.team_id === final.team2_id).length;
+        html += `<div class="match-card">
+          <div class="match-teams">
+            <span>${getTeamName(final, 1)}</span>
+            <div class="score">${final.played || (final.goals && final.goals.length > 0) ? finalScore1 + '-' + finalScore2 : 'vs'}</div>
+            <span>${getTeamName(final, 2)}</span>
+          </div>
+          <div class="match-info">${final.scheduled_at ? new Date(final.scheduled_at).toLocaleString('pt-PT') : 'Data TBD'}</div>
         </div>`;
       } else {
         html += '<p class="empty-hint">A aguardar apuramento...</p>';
