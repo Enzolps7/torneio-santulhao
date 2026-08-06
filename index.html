@@ -1257,7 +1257,7 @@
         if (!groupsReady) html += '<p class="empty-hint" style="margin-bottom: 16px;">Termine todos os jogos de grupo primeiro.</p>';
       }
 
-      if (state.session && semi1?.played && semi2?.played && !final && !third) {
+      if (state.session && semi1 && semi2 && (semi1.played || (semi1.goals && semi1.goals.length > 0)) && (semi2.played || (semi2.goals && semi2.goals.length > 0)) && !final && !third) {
         html += '<button class="btn-small" style="margin-bottom: 16px;" onclick="generateFinal()">Gerar Final e 3º Lugar</button>';
       }
 
