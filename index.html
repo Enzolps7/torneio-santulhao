@@ -586,9 +586,63 @@
     gap: 25px;
   }
 
+  .bracket-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 25px;
+  }
+
   @media (max-width: 900px) {
     .groups-grid { grid-template-columns: 1fr; }
     .header-text h1 { font-size: 1.25em; }
+  }
+
+  .winner-box {
+    margin-top: 22px;
+    text-align: center;
+    padding: 30px 20px;
+    border: 2px solid var(--gold);
+    border-radius: 14px;
+    background: rgba(212, 175, 55, 0.05);
+  }
+
+  .winner-box h3 {
+    color: var(--gold-light);
+    letter-spacing: 3px;
+    margin: 0 0 10px;
+    text-transform: uppercase;
+  }
+
+  .trophy-display {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 140px;
+  }
+
+  .trophy-bg {
+    position: absolute;
+    font-size: 130px;
+    opacity: 0.22;
+    line-height: 1;
+    filter: drop-shadow(0 0 20px rgba(212, 175, 55, 0.4));
+  }
+
+  .winner-name {
+    position: relative;
+    z-index: 1;
+    font-size: 1.9em;
+    font-weight: 800;
+    background-image: var(--gold-shine);
+    background-size: 250% auto;
+    background-clip: text;
+    -webkit-background-clip: text;
+    color: transparent;
+    -webkit-text-fill-color: transparent;
+    animation: shine 5s linear infinite;
+    text-align: center;
+    padding: 0 12px;
   }
 
   table {
@@ -1249,7 +1303,7 @@
       let html = '<div class="card fade-in"><h2>🏅 Fase Final</h2>';
 
 
-      html += '<div class="groups-grid">';
+      html += '<div class="bracket-grid">';
 
       html += '<div><h3>Meias-Finais</h3>';
       if (semi1) {
@@ -1279,7 +1333,7 @@
       if (!semi1 && !semi2) html += '<p class="empty-hint">A aguardar apuramento...</p>';
       html += '</div>';
 
-      html += '<div><h3>Final & 3º Lugar</h3>';
+      html += '<div><h3>🏆 Final</h3>';
       if (final) {
         const finalScore1 = (final.goals || []).filter(g => g.team_id === final.team1_id).length;
         const finalScore2 = (final.goals || []).filter(g => g.team_id === final.team2_id).length;
@@ -1291,7 +1345,12 @@
           </div>
           <div class="match-info">${final.scheduled_at ? new Date(final.scheduled_at).toLocaleString('pt-PT') : 'Data TBD'}</div>
         </div>`;
+      } else {
+        html += '<p class="empty-hint">A aguardar apuramento...</p>';
       }
+      html += '</div>';
+
+      html += '<div><h3>🥉 3º Lugar</h3>';
       if (third) {
         const thirdScore1 = (third.goals || []).filter(g => g.team_id === third.team1_id).length;
         const thirdScore2 = (third.goals || []).filter(g => g.team_id === third.team2_id).length;
@@ -1303,9 +1362,27 @@
           </div>
           <div class="match-info">${third.scheduled_at ? new Date(third.scheduled_at).toLocaleString('pt-PT') : 'Data TBD'}</div>
         </div>`;
+      } else {
+        html += '<p class="empty-hint">A aguardar apuramento...</p>';
       }
-      if (!final && !third) html += '<p class="empty-hint">A aguardar apuramento...</p>';
-      html += '</div></div></div>';
+      html += '</div>';
+      html += '</div></div>';
+
+      if (final) {
+        const finalScore1 = (final.goals || []).filter(g => g.team_id === final.team1_id).length;
+        const finalScore2 = (final.goals || []).filter(g => g.team_id === final.team2_id).length;
+        const finalDecided = (final.played || (final.goals && final.goals.length > 0)) && finalScore1 !== finalScore2;
+        if (finalDecided) {
+          const winnerName = finalScore1 > finalScore2 ? getTeamName(final, 1) : getTeamName(final, 2);
+          html += `<div class="winner-box fade-in">
+            <h3>Vencedores</h3>
+            <div class="trophy-display">
+              <span class="trophy-bg">🏆</span>
+              <span class="winner-name">${winnerName}</span>
+            </div>
+          </div>`;
+        }
+      }
 
       return html;
     }
