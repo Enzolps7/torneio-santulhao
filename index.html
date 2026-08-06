@@ -1108,6 +1108,65 @@
       ]);
       state.teams = teams.data || [];
       state.matches = matches.data || [];
+
+      // Auto-generate semis if all group matches are done
+      await autoGenerateSemis();
+      // Auto-generate final if both semis are done
+      await autoGenerateFinal();
+    }
+
+    async function autoGenerateSemis() {
+      const groupMatches = state.matches.filter(m => m.stage === 'group');
+      const semis = state.matches.filter(m => m.stage === 'semi');
+
+      if (groupMatches.length === 0 || semis.length > 0) return; // Already have semis or no group matches
+
+      const allGroupsDone = groupMatches.every(m => m.played || (m.goals && m.goals.length > 0));
+      if (!allGroupsDone) return;
+
+      const sa = computeStandings(state.teams, state.matches, 'A');
+      const sb = computeStandings(state.teams, state.matches, 'B');
+
+      if (sa.length < 2 || sb.length < 2) return;
+
+      try {
+        await db.from('matches').insert([
+          { stage: 'semi', semi_slot: 'semi1', team1_id: sa[0].team.id, team2_id: sb[1].team.id, placeholder1: '1º A', placeholder2: '2º B' },
+          { stage: 'semi', semi_slot: 'semi2', team1_id: sb[0].team.id, team2_id: sa[1].team.id, placeholder1: '1º B', placeholder2: '2º A' }
+        ]);
+      } catch (e) {
+        // Silently fail if semis already exist
+      }
+    }
+
+    async function autoGenerateFinal() {
+      const semi1 = state.matches.find(m => m.stage === 'semi' && m.semi_slot === 'semi1');
+      const semi2 = state.matches.find(m => m.stage === 'semi' && m.semi_slot === 'semi2');
+      const final = state.matches.find(m => m.stage === 'final');
+
+      if (!semi1 || !semi2 || final) return;
+
+      const semi1Score1 = (semi1.goals || []).filter(g => g.team_id === semi1.team1_id).length || 0;
+      const semi1Score2 = (semi1.goals || []).filter(g => g.team_id === semi1.team2_id).length || 0;
+      const semi2Score1 = (semi2.goals || []).filter(g => g.team_id === semi2.team1_id).length || 0;
+      const semi2Score2 = (semi2.goals || []).filter(g => g.team_id === semi2.team2_id).length || 0;
+
+      if ((semi1Score1 === 0 && semi1Score2 === 0) || (semi2Score1 === 0 && semi2Score2 === 0)) return;
+      if (semi1Score1 === semi1Score2 || semi2Score1 === semi2Score2) return;
+
+      const winner1 = semi1Score1 > semi1Score2 ? semi1.team1_id : semi1.team2_id;
+      const loser1 = semi1Score1 > semi1Score2 ? semi1.team2_id : semi1.team1_id;
+      const winner2 = semi2Score1 > semi2Score2 ? semi2.team1_id : semi2.team2_id;
+      const loser2 = semi2Score1 > semi2Score2 ? semi2.team2_id : semi2.team1_id;
+
+      try {
+        await db.from('matches').insert([
+          { stage: 'final', team1_id: winner1, team2_id: winner2, placeholder1: 'Vencedor SF1', placeholder2: 'Vencedor SF2' },
+          { stage: 'third_place', team1_id: loser1, team2_id: loser2, placeholder1: 'Perdedor SF1', placeholder2: 'Perdedor SF2' }
+        ]);
+      } catch (e) {
+        // Silently fail if final already exists
+      }
     }
 
     function renderNav() {
@@ -1248,14 +1307,6 @@
       const third = state.matches.find(m => m.stage === 'third_place');
 
       let html = '<div class="card fade-in"><h2>🏅 Fase Final</h2>';
-
-      if (state.session && !semi1 && !semi2) {
-        const groupA = state.matches.filter(m => m.stage === 'group' && m.group_name === 'A');
-        const groupB = state.matches.filter(m => m.stage === 'group' && m.group_name === 'B');
-        const groupsReady = groupA.length > 0 && groupA.every(m => m.played || (m.goals && m.goals.length > 0)) && groupB.length > 0 && groupB.every(m => m.played || (m.goals && m.goals.length > 0));
-        html += `<button class="btn-small" style="margin-bottom: 16px;" ${groupsReady ? '' : 'disabled'} onclick="generateSemis()">Gerar Meias-Finais</button>`;
-        if (!groupsReady) html += '<p class="empty-hint" style="margin-bottom: 16px;">Termine todos os jogos de grupo primeiro.</p>';
-      }
 
 
       html += '<div class="groups-grid">';
@@ -1428,7 +1479,6 @@
 
       html += `<div id="schedules-section" class="admin-section"><h3>Calendário de Grupos</h3>
         <p class="empty-hint" style="margin-bottom: 12px;">Os jogos da fase de grupos (todos contra todos) e da fase final são criados automaticamente. Defina apenas a hora de cada jogo em baixo.</p>
-        <button class="btn-small" onclick="generateGroupFixtures()">Atualizar Jogos de Grupo</button>
       </div>`;
 
       const stageLabels = { group: 'Grupo', semi: 'Meia-Final', third_place: '3º Lugar', final: 'Final' };
