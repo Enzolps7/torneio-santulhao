@@ -1257,9 +1257,6 @@
         if (!groupsReady) html += '<p class="empty-hint" style="margin-bottom: 16px;">Termine todos os jogos de grupo primeiro.</p>';
       }
 
-      if (state.session && semi1 && semi2 && (semi1.played || (semi1.goals && semi1.goals.length > 0)) && (semi2.played || (semi2.goals && semi2.goals.length > 0)) && !final && !third) {
-        html += '<button class="btn-small" style="margin-bottom: 16px;" onclick="generateFinal()">Gerar Final e 3º Lugar</button>';
-      }
 
       html += '<div class="groups-grid">';
 
@@ -1649,6 +1646,15 @@
       await db.from('matches').update({ score1, score2, played: true }).eq('id', matchId);
       await loadData();
       closeGoalsPanel();
+
+      // Auto-generate final if both semis are done
+      const semi1 = state.matches.find(m => m.stage === 'semi' && m.semi_slot === 'semi1');
+      const semi2 = state.matches.find(m => m.stage === 'semi' && m.semi_slot === 'semi2');
+      const final = state.matches.find(m => m.stage === 'final');
+
+      if (semi1 && semi2 && !final && (semi1.played || (semi1.goals && semi1.goals.length > 0)) && (semi2.played || (semi2.goals && semi2.goals.length > 0))) {
+        await generateFinal();
+      }
     }
 
     function closeGoalsPanel() {
