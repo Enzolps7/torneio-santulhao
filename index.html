@@ -1516,7 +1516,7 @@
             </div>
             <div style="width: 100%; margin-top: 10px; display: flex; gap: 10px; flex-wrap: wrap;">
               <button class="btn-small" onclick="selectMatchForGoals('${m.id}')">📊 Resultado: ${m.played ? m.score1 + '-' + m.score2 : 'VS'}</button>
-              ${m.played ? `<button class="btn-small" style="background: linear-gradient(135deg, #d4af37, #f5dd8f);" onclick="clearAllGoals('${m.id}')">🗑️ Limpar Golos</button>` : ''}
+              ${m.played ? `<button class="btn-small btn-danger" onclick="reopenMatch('${m.id}')">↩️ Anular Resultado</button>` : ''}
               <button class="btn-small btn-danger" onclick="deleteMatch('${m.id}')">Remover</button>
             </div>
           </div>`;
@@ -1705,10 +1705,31 @@
       selectMatchForGoals(matchId);
     }
 
-    async function clearAllGoals(matchId) {
-      if (!confirm('Remover TODOS os golos deste jogo?')) return;
+    async function reopenMatch(matchId) {
+      const match = state.matches.find(m => m.id === matchId);
+      if (!match) return;
+
+      const isSemi = match.stage === 'semi';
+      const warning = isSemi
+        ? 'Isto vai remover todos os golos, reabrir esta meia-final E retirar a equipa correspondente da Final e do 3º Lugar (se já lá estiver). Continuar?'
+        : 'Remover TODOS os golos e reabrir este jogo?';
+      if (!confirm(warning)) return;
+
       await db.from('goals').delete().eq('match_id', matchId);
       await db.from('matches').update({ score1: null, score2: null, played: false }).eq('id', matchId);
+
+      // Se for uma meia-final, desfazer também o que o trigger tinha colocado
+      // na Final / 3º Lugar, para não deixar lá uma equipa "fantasma".
+      if (isSemi) {
+        const final = state.matches.find(m => m.stage === 'final');
+        const third = state.matches.find(m => m.stage === 'third_place');
+        const slotField = match.semi_slot === 'semi1' ? 'team1_id' : match.semi_slot === 'semi2' ? 'team2_id' : null;
+        if (slotField) {
+          if (final && !final.played) await db.from('matches').update({ [slotField]: null }).eq('id', final.id);
+          if (third && !third.played) await db.from('matches').update({ [slotField]: null }).eq('id', third.id);
+        }
+      }
+
       await loadData();
       closeGoalsPanel();
     }
@@ -1782,7 +1803,7 @@
     window.selectMatchForGoals = selectMatchForGoals;
     window.addGoal = addGoal;
     window.removeGoal = removeGoal;
-    window.clearAllGoals = clearAllGoals;
+    window.reopenMatch = reopenMatch;
     window.finishMatch = finishMatch;
     window.closeGoalsPanel = closeGoalsPanel;
 
