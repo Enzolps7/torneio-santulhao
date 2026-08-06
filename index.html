@@ -1131,6 +1131,8 @@
         });
 
         await withTimeout(loadData(), 8000);
+        await autoGenerateSemis();
+        await autoGenerateFinal();
 
         db.channel('changes')
           .on('postgres_changes', { event: '*', schema: 'public' }, async () => {
